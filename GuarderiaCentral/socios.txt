@@ -1,0 +1,2 @@
+602,Socio Default,Calle Real 789,11223344,socio,socio123,SOCIO,46598674,2026-07-12
+603,franco,direccion1512,9999999999,fuya,franco123,SOCIO,46464664,2004-12-15

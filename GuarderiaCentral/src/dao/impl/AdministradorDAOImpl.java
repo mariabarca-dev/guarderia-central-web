@@ -1,0 +1,95 @@
+package dao.impl;
+
+import dao.AdministradorDAO;
+import database.ArchivoAdministrador;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import model.Administrador;
+
+public class AdministradorDAOImpl implements AdministradorDAO {
+    
+    private ArchivoAdministrador bd;
+
+    public AdministradorDAOImpl() {
+        this.bd = new ArchivoAdministrador();
+        this.bd.inicializarBD(); // Se asegura de que SOLO su entorno esté listo
+    }
+
+    private final String RUTA_ARCHIVO = "administrador.txt";
+
+    @Override
+    public void guardar(Administrador admin) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO, true))) {
+            bw.write(admin.toCsv());
+            bw.newLine();
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void actualizar(Administrador admin) {
+        List<Administrador> lista = listarTodos();
+        for (int i = 0; i < lista.size(); i++) {
+            if (lista.get(i).getId() == admin.getId()) {
+                lista.set(i, admin);
+                break;
+            }
+        }
+        reescribirArchivo(lista);
+    }
+
+    @Override
+    public void eliminar(Integer id) {
+        List<Administrador> lista = listarTodos();
+        lista.removeIf(a -> a.getId() == id);
+        reescribirArchivo(lista);
+    }
+
+    @Override
+    public Administrador buscarPorId(Integer id) {
+        return listarTodos().stream().filter(a -> a.getId() == id).findFirst().orElse(null);
+    }
+
+    @Override
+    public List<Administrador> listarTodos() {
+        List<Administrador> lista = new ArrayList<>();
+        File archivo = new File(RUTA_ARCHIVO);
+        if (!archivo.exists()) {
+            return lista;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                lista.add(Administrador.fromString(linea));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    @Override
+    public boolean existeAdministrador(String username) {
+        return listarTodos().stream().anyMatch(a -> a.getNombreUsuario().equals(username));
+    }
+
+    private void reescribirArchivo(List<Administrador> lista) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO))) {
+            for (Administrador a : lista) {
+                bw.write(a.toCsv());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+}

@@ -1,0 +1,1 @@
+300,Empleado Default,Av. Principal 456,87654321,EMP001,empleado123,EMPLEADO,EMP-01,Cuidacoche
