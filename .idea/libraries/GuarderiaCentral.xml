@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="GuarderiaCentral">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GuarderiaCentral/dist/GuarderiaCentral.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
