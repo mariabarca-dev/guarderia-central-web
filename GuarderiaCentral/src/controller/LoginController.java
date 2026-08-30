@@ -15,7 +15,7 @@ import dto.UsuarioDTO;
 import dto.EmpleadoDTO;
 import dto.SocioDTO;
 
-///estoy probando el intellig idea
+///segunda prueba probando el intellig idea
 
 public class LoginController {
     
