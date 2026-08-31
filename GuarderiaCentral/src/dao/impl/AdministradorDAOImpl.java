@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Administrador;
 
+//prueba conexion
+
 public class AdministradorDAOImpl implements AdministradorDAO {
 
     private final String RUTA_ARCHIVO = "administrador.txt";
