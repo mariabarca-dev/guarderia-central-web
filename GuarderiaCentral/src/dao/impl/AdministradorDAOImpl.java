@@ -13,15 +13,13 @@ import java.util.List;
 import model.Administrador;
 
 public class AdministradorDAOImpl implements AdministradorDAO {
-    
-    private ArchivoAdministrador bd;
-
-    public AdministradorDAOImpl() {
-        this.bd = new ArchivoAdministrador();
-        this.bd.inicializarBD(); // Se asegura de que SOLO su entorno esté listo
-    }
 
     private final String RUTA_ARCHIVO = "administrador.txt";
+
+    public AdministradorDAOImpl() {
+        ArchivoAdministrador bd = new ArchivoAdministrador();
+        bd.inicializarBD(); // Se asegura de que SOLO su entorno esté listo
+    }
 
     @Override
     public void guardar(Administrador admin) {
@@ -29,7 +27,7 @@ public class AdministradorDAOImpl implements AdministradorDAO {
             bw.write(admin.toCsv());
             bw.newLine();
         } catch (IOException e) {
-            System.out.println("Error: " + e.getMessage());
+            System.err.println("Error al guardar administrador: " + e.getMessage());
         }
     }
 
@@ -47,6 +45,7 @@ public class AdministradorDAOImpl implements AdministradorDAO {
 
     @Override
     public void eliminar(Integer id) {
+        if (id == null) return;
         List<Administrador> lista = listarTodos();
         lista.removeIf(a -> a.getId() == id);
         reescribirArchivo(lista);
@@ -54,7 +53,11 @@ public class AdministradorDAOImpl implements AdministradorDAO {
 
     @Override
     public Administrador buscarPorId(Integer id) {
-        return listarTodos().stream().filter(a -> a.getId() == id).findFirst().orElse(null);
+        if (id == null) return null;
+        return listarTodos().stream()
+                .filter(a -> a.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -68,17 +71,29 @@ public class AdministradorDAOImpl implements AdministradorDAO {
         try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                lista.add(Administrador.fromString(linea));
+                // Ignora líneas vacías o con puros espacios
+                if (linea.trim().isEmpty()) {
+                    continue;
+                }
+
+                try {
+                    Administrador admin = Administrador.fromString(linea);
+                    lista.add(admin);
+                } catch (Exception e) {
+                    System.err.println("Error al procesar línea en administrador.txt: \"" + linea + "\" - " + e.getMessage());
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error al leer el archivo de administradores: " + e.getMessage());
         }
         return lista;
     }
 
     @Override
     public boolean existeAdministrador(String username) {
-        return listarTodos().stream().anyMatch(a -> a.getNombreUsuario().equals(username));
+        if (username == null) return false;
+        return listarTodos().stream()
+                .anyMatch(a -> a.getNombreUsuario() != null && a.getNombreUsuario().equalsIgnoreCase(username));
     }
 
     private void reescribirArchivo(List<Administrador> lista) {
@@ -88,8 +103,7 @@ public class AdministradorDAOImpl implements AdministradorDAO {
                 bw.newLine();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error al reescribir el archivo de administradores: " + e.getMessage());
         }
     }
-
 }
