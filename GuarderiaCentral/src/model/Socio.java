@@ -7,7 +7,16 @@ public class Socio extends Usuario {
     private String dni;
     private LocalDate fechaIngreso;
 
-   
+    public Socio() {
+    }
+
+    public Socio(String nombre, String direccion, String telefono,
+                 String nombreUsuario, String clave, Rol rol, String dni, LocalDate fechaIngreso) {
+        // Pasamos el Rol al super constructor de Usuario
+        super(nombre, direccion, telefono, nombreUsuario, clave, rol);
+        this.dni = dni;
+        this.fechaIngreso = fechaIngreso;
+    }
 
     // Constructor con parámetros (AHORA INCLUYE EL ROL)
     public Socio(int id, String nombre, String direccion, String telefono,

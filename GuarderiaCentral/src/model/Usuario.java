@@ -18,6 +18,15 @@ public abstract class Usuario implements Serializable {
     public Usuario() {
     }
 
+    // Constructor con parámetros sin id
+    public Usuario(String nombre, String direccion, String telefono, String nombreUsuario, String clave, Rol rol) {
+        this.nombre = nombre;
+        this.direccion = direccion;
+        this.telefono = telefono;
+        this.nombreUsuario = nombreUsuario;
+        this.clave = clave;
+        this.rol = rol;
+    }
     // Constructor con parámetros
     public Usuario(int id, String nombre, String direccion, String telefono, String nombreUsuario, String clave, Rol rol) {
         this.id = id;

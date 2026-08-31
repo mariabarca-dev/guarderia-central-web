@@ -12,6 +12,8 @@ import model.AsignacionVehiculoGarage;
 import model.Empleado;
 import model.Garage;
 
+//tercera prueba de conexion
+
 public class AdminController {
 
     private final SocioService socioService = new SocioService();

@@ -1,5 +1,6 @@
 
 package view.impl;
+import view.Vista;
 
 
 import java.util.Scanner;
@@ -7,7 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public abstract class VistaImpl {
+public abstract class VistaImpl implements Vista {
     // Todos los menús compartirán este mismo scanner
     protected Scanner scanner = new Scanner(System.in);
     protected static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -61,7 +62,8 @@ public abstract class VistaImpl {
             }
         }
     }
-    
-    // Obligas a que todos los menús tengan un método para iniciar
+
+    // Obliga a que todos los menús concretos implementen este método de la interfaz Vista
+    @Override
     public abstract void mostrar();
 }
