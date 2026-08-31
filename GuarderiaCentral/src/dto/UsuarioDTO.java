@@ -10,7 +10,11 @@ public class UsuarioDTO {
     private String telefono;
     private String nombreUsuario; 
     private String clave;
-    private Rol rol; 
+    private Rol rol;
+
+    // Constructor vacío
+    public UsuarioDTO() {
+    }
 
     public UsuarioDTO(int id, String nombre, String direccion, String telefono, 
                       String nombreUsuario, String clave, Rol rol) {

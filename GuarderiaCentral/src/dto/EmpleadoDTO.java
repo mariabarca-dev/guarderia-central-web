@@ -7,6 +7,10 @@ public class EmpleadoDTO extends UsuarioDTO {
     private String codigo;
     private String especialidad;
 
+    public EmpleadoDTO() {
+        super();
+    }
+
     // Constructor actualizado con el parámetro Rol
     public EmpleadoDTO(int id, String nombre, String direccion, String telefono, 
                        String nombreUsuario, String clave, Rol rol, 

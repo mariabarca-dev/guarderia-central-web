@@ -3,17 +3,16 @@ package mapper;
 import model.Usuario;
 import model.Socio;
 import model.Empleado;
-import model.Administrador; // Importación necesaria
+import model.Administrador;
 import dto.UsuarioDTO;
 import dto.SocioDTO;
 import dto.EmpleadoDTO;
-import dto.AdministradorDTO; // Importación necesaria
+import dto.AdministradorDTO;
 
 public class UsuarioMapper {
 
     /**
-     * Convierte un modelo Usuario a un UsuarioDTO (Mantiene tu lógica
-     * original).
+     * Convierte un modelo Usuario a un UsuarioDTO.
      */
     public static UsuarioDTO toDto(Usuario model) {
         if (model == null) {
@@ -27,7 +26,7 @@ public class UsuarioMapper {
             return SocioMapper.toDto((Socio) model);
         }
 
-        // Fallback genérico si fuera solo Usuario (abstracto, quizás no ocurra)
+        // Fallback genérico si fuera solo Usuario
         return new UsuarioDTO(
                 model.getId(), model.getNombre(), model.getDireccion(),
                 model.getTelefono(), model.getNombreUsuario(), model.getClave(),
@@ -36,15 +35,14 @@ public class UsuarioMapper {
     }
 
     /**
-     * NUEVO MÉTODO: Convierte un UsuarioDTO a un modelo Usuario concreto.
-     * Utiliza los mappers específicos de cada subclase para no perder datos.
+     * Convierte un UsuarioDTO a un modelo Usuario concreto.
      */
     public static Usuario toModel(UsuarioDTO dto) {
         if (dto == null) {
             return null;
         }
 
-        // 1. Si es una instancia específica, úsala
+        // 1. Si es una instancia específica, se usan los mappers correspondientes
         if (dto instanceof AdministradorDTO) {
             return AdministradorMapper.toModel((AdministradorDTO) dto);
         }
@@ -55,20 +53,46 @@ public class UsuarioMapper {
             return SocioMapper.toModel((SocioDTO) dto);
         }
 
-        // 2. SI LLEGA UN UsuarioDTO GENÉRICO, USAMOS EL ROL PARA CREAR EL MODELO
-        // (Esto soluciona el error en el LoginController)
+        // 2. Si llega un UsuarioDTO genérico, se evalúa el ROL para instanciar el Modelo
         switch (dto.getRol()) {
+            case SUPERADMINISTRADOR:
             case ADMINISTRADOR:
-                return new Administrador(dto.getId(), dto.getNombre(), dto.getDireccion(),dto.getTelefono(), dto.getNombreUsuario(), dto.getClave(), dto.getRol());
+                return new Administrador(
+                        dto.getId(),
+                        dto.getNombre(),
+                        dto.getDireccion(),
+                        dto.getTelefono(),
+                        dto.getNombreUsuario(),
+                        dto.getClave(),
+                        dto.getRol()
+                );
+
             case EMPLEADO:
-                // Ponemos valores por defecto si no tenemos los específicos en el DTO genérico
-                return new Empleado(dto.getId(), dto.getNombre(), dto.getDireccion(),
-                        dto.getTelefono(), dto.getNombreUsuario(), dto.getClave(),
-                        dto.getRol(), "N/A", "N/A");
+                return new Empleado(
+                        dto.getId(),
+                        dto.getNombre(),
+                        dto.getDireccion(),
+                        dto.getTelefono(),
+                        dto.getNombreUsuario(),
+                        dto.getClave(),
+                        dto.getRol(),
+                        "N/A",
+                        "N/A"
+                );
+
             case SOCIO:
-                return new Socio(dto.getId(), dto.getNombre(), dto.getDireccion(),
-                        dto.getTelefono(), dto.getNombreUsuario(), dto.getClave(),
-                        dto.getRol(), "N/A", java.time.LocalDate.now());
+                return new Socio(
+                        dto.getId(),
+                        dto.getNombre(),
+                        dto.getDireccion(),
+                        dto.getTelefono(),
+                        dto.getNombreUsuario(),
+                        dto.getClave(),
+                        dto.getRol(),
+                        "N/A",
+                        java.time.LocalDate.now()
+                );
+
             default:
                 throw new IllegalArgumentException("Rol no reconocido: " + dto.getRol());
         }

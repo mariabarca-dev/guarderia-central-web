@@ -8,6 +8,10 @@ public class SocioDTO extends UsuarioDTO {
     private String dni;
     private LocalDate fechaIngreso;
 
+    public SocioDTO() {
+        super();
+    }
+
     // Constructor actualizado con el parámetro Rol
     public SocioDTO(int id, String nombre, String direccion, String telefono, 
                     String nombreUsuario, String clave, Rol rol, 
