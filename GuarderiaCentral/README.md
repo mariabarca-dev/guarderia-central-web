@@ -14,11 +14,12 @@ Este proyecto es una solución de software desarrollada en **Java** para la gest
 ## Credenciales de Acceso para Pruebas
 Para facilitar la evaluación y verificación del sistema, se han configurado los siguientes usuarios de prueba mediante la clase `InicializarDataBase.java`. Puedes utilizar estas credenciales para acceder a las distintas funcionalidades según el rol:
 
-| Rol               | Usuario    | Contraseña    |
-| :---              | :---       | :---          |
-| **Administrador** | `admin`    | `admin123`    |
-| **Empleado**      | `empleado` | `empleado123` |
-| **Socio**         | `socio`    | `socio123`    |
+| Rol                    | Usuario      | Contraseña    |
+|:-----------------------|:-------------|:--------------|
+| **SuperAdministrador** | `superadmin` | `super123`    |
+| **Administrador**      | `admin`      | `admin123`    |
+| **Empleado**           | `empleado`   | `empleado123` |
+| **Socio**              | `socio`      | `socio123`    |
 
 *Nota: Estas cuentas se crean automáticamente en la primera ejecución si la base de datos está vacía.*
 
