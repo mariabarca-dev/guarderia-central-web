@@ -15,9 +15,9 @@ import dto.UsuarioDTO;
 import dto.EmpleadoDTO;
 import dto.SocioDTO;
 
-///segunda prueba probando el intellig idea
 
-public class LoginController {
+
+public class LoginController implements Controlador {
     
     // Inyectamos servicios necesarios
     private UsuarioService usuarioService;
