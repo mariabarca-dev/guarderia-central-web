@@ -1,5 +1,7 @@
 package service;
 
+import dto.EmpleadoDTO;
+import dto.ZonaDTO;
 import model.AsignacionEmpleadoZona;
 import model.Empleado;
 import model.Zona;
@@ -18,9 +20,14 @@ import java.util.List;
 public class AsignacionEmpleadoZonaService {
     
     private AsignacionEmpleadoZonaDAO dao;
+    private final ZonaService zonaService = new ZonaService();
+    private final EmpleadoService empleadoService;
+    private final AsignacionEmpleadoZonaService asignacionEmpleadoZonaService = new AsignacionEmpleadoZonaService();
+
 
     public AsignacionEmpleadoZonaService() {
         this.dao = new AsignacionEmpleadoZonaDAOImpl();
+        this.empleadoService = new EmpleadoService();
     }
 
     /**
@@ -64,5 +71,54 @@ public class AsignacionEmpleadoZonaService {
     
     public List<AsignacionEmpleadoZona> buscarPorCodigoEmpleado(String codigo) {
         return dao.buscarPorEmpleado(codigo);
+    }
+
+    //EXTRAÍDO DEL AdminController
+    //ESTO VA EN AsignacionEmpleadoZonaService
+    public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
+        try {
+            // Validación: que la zona exista y tenga capacidad
+            ZonaDTO zona = null;
+            List<ZonaDTO> zonas = zonaService.listarTodas();
+            for (ZonaDTO z : zonas) {
+                if (z.getId() == dto.getZona().getId()) {
+                    zona = z;
+                    break;
+                }
+            }
+            if (zona == null) {
+                throw new ErrorNegocio("La zona no existe.");
+            }
+
+            // Validación: que el empleado exista
+            EmpleadoDTO empleado = empleadoService.buscarEmpleadoPorId(dto.getEmpleado().getId());
+            if (empleado == null) {
+                throw new ErrorNegocio("El empleado no existe.");
+            }
+
+            // Delegamos al service
+            asignacionEmpleadoZonaService.crearAsignacion(dto);
+
+        } catch (ErrorNegocio e) {
+            throw e; // Propagamos la excepción de negocio
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ErrorNegocio("Error inesperado al asignar empleado a zona: " + e.getMessage());
+        }
+    }
+
+    //ESTO VA EN AsignacionEmpleadoZonaService
+    public void listarEmpleadosPorZona(int idZona) {
+        List<AsignacionEmpleadoZona> asignaciones = asignacionEmpleadoZonaService.listarTodas();
+
+        System.out.println("Empleados asignados a la zona " + idZona + ":");
+        for (AsignacionEmpleadoZona asg : asignaciones) {
+            if (asg.getZona().getId() == idZona) {
+                Empleado emp = asg.getEmpleado();
+                System.out.println("ID: " + emp.getId()
+                        + " | Código: " + emp.getCodigo()
+                        + " | Nombre: " + emp.getNombre());
+            }
+        }
     }
 }

@@ -4,7 +4,20 @@ public class AsignacionEmpleadoZona {
     
     private Empleado empleado;
     private Zona zona;
+    private int id;
     private int cantVehiculosACargo;
+
+    //Constructor vacio
+    public AsignacionEmpleadoZona() {
+    }
+
+    //constructor completo
+    public AsignacionEmpleadoZona(Empleado empleado, Zona zona, int id, int cantVehiculosACargo){
+        this.empleado = empleado;
+        this.zona = zona;
+        this.id = id;
+        this.cantVehiculosACargo = cantVehiculosACargo;
+    }
 
     /**
      * Constructor con validación.

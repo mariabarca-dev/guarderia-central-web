@@ -2,7 +2,14 @@ package model;
 
 public class Administrador extends Usuario {
 
-   
+    //Constructor vacio
+    public Administrador() {
+    }
+
+    //Constructor sin id
+    public Administrador(String nombre, String direccion, String telefono, String nombreUsuario, String clave, Rol rol) {
+        super(nombre, direccion, telefono, nombreUsuario, clave, rol);
+    }
 
     // Constructor con parámetros (AHORA INCLUYE ROL)
     public Administrador(int id, String nombre, String direccion, String telefono, 

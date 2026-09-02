@@ -19,6 +19,8 @@ import util.IdGenerator;
 public class EmpleadoService {
 
     private EmpleadoDAO empleadoDAO;
+    private final EmpleadoService empleadoService = new EmpleadoService();
+
 
     public EmpleadoService() {
         // Inyección de dependencia directa (podría mejorarse con un framework)
@@ -99,5 +101,16 @@ public class EmpleadoService {
         
         // Ejecutamos la eliminación en el DAO.
         empleadoDAO.eliminar(id);
+    }
+
+    //ESTO VA EN EmpleadoService
+    public EmpleadoDTO buscarEmpleadoPorId(int idEmpleado) {
+        List<EmpleadoDTO> empleados = empleadoService.listarTodos();
+        for (EmpleadoDTO e : empleados) {
+            if (e.getId() == idEmpleado) {
+                return e;
+            }
+        }
+        return null; // No encontrado
     }
 }
