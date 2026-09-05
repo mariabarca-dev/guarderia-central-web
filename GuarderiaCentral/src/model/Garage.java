@@ -24,7 +24,6 @@ public class Garage {
         if (lecturaLuz < 0) throw new IllegalArgumentException("La lectura de luz no puede ser negativa.");
         
         // Validación de objetos obligatorios
-        Objects.requireNonNull(fechaCompra, "La fecha de compra no puede ser nula.");
         Objects.requireNonNull(zona, "Un garaje debe pertenecer a una zona.");
         
         this.id = id;
@@ -43,6 +42,28 @@ public class Garage {
                   Socio socioPropietario, LocalDate fechaCompra, Zona zona) {
         this(id, numeroGarage, 0.0, servicioMantenimiento, socioPropietario, fechaCompra, zona);
     }
+    //constructor Vacio
+    public Garage() {
+    }
+    //constructor sin ID
+    public Garage(int numeroGarage, double lecturaLuz, boolean servicioMantenimiento,
+                  Socio socioPropietario, LocalDate fechaCompra, Zona zona) {
+        // Validaciones numérica
+        if (numeroGarage <= 0) throw new IllegalArgumentException("El número de garaje debe ser mayor a 0.");
+        if (lecturaLuz < 0) throw new IllegalArgumentException("La lectura de luz no puede ser negativa.");
+
+        // Validación de objetos obligatorios
+        Objects.requireNonNull(zona, "Un garaje debe pertenecer a una zona.");
+
+
+        this.numeroGarage = numeroGarage;
+        this.lecturaLuz = lecturaLuz;
+        this.servicioMantenimiento = servicioMantenimiento;
+        this.socioPropietario = socioPropietario;
+        this.fechaCompra = fechaCompra;
+        this.zona = zona; // ¡ASIGNACIÓN DEL NUEVO ATRIBUTO!
+    }
+
 
     // --- Getters ---
     public int getId() { return id; }

@@ -46,11 +46,18 @@ public class ZonaDAOImpl implements ZonaDAO {
         lista.removeIf(z -> z.getLetra().equals(letra));
         reescribirArchivo(lista);
     }
-
+    //método modificado para que tome también minusculas
     @Override
     public Zona buscarPorLetra(String letra) {
+        if (letra == null) {
+            return null;
+        }
+
+        // Normalizamos el parámetro de búsqueda
+        String letraBuscada = letra.trim().toUpperCase();
+
         return listarTodos().stream()
-                .filter(z -> z.getLetra().equals(letra))
+                .filter(z -> z.getLetra() != null && z.getLetra().equals(letraBuscada))
                 .findFirst()
                 .orElse(null);
     }

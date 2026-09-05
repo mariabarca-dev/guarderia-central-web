@@ -3,7 +3,7 @@ package dao;
 import java.util.List;
 import model.Vehiculo;
 
-public interface VehiculoDAO{
+public interface VehiculoDAO extends GenericDAO{
     void guardar(Vehiculo vehiculo);
     void actualizar(Vehiculo vehiculo);
     void eliminar(String matricula);

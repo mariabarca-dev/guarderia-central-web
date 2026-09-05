@@ -4,99 +4,115 @@ import model.AsignacionVehiculoGarage;
 import model.Vehiculo;
 import model.Garage;
 import model.Zona;
+import model.Socio;
 import dto.AsignacionVehiculoGarageDTO;
-import mapper.AsignacionVehiculoGarageMapper;
-import dao.AsignacionVehiculoGarageDAO;
-import dao.impl.AsignacionVehiculoGarageDAOImpl;
 import dto.GarageDTO;
 import dto.VehiculoDTO;
-import exceptions.ErrorNegocio;
-import exceptions.ZonaSinCapacidadException;
-import exceptions.RegistroNoEncontradoException; // Import necesario
-import java.util.List;
+import mapper.AsignacionVehiculoGarageMapper;
 import mapper.GarageMapper;
 import mapper.VehiculoMapper;
+import dao.AsignacionVehiculoGarageDAO;
+import dao.impl.AsignacionVehiculoGarageDAOImpl;
+import dao.SocioDAO;
+import dao.impl.SocioDAOImpl;
+import dao.ZonaDAO;
+import dao.impl.ZonaDAOImpl;
+import exceptions.ErrorNegocio;
+import exceptions.GarageYaOcupadoException;
+import exceptions.RegistroNoEncontradoException;
+import exceptions.ZonaSinCapacidadException;
+
+import java.util.List;
 
 public class AsignacionVehiculoGarageService {
 
-    private AsignacionVehiculoGarageDAO dao;
-    // Necesitamos los servicios de Vehiculo y Garage para buscar los objetos completos
-    
+    private final AsignacionVehiculoGarageDAO dao;
+    private final SocioDAO socioDAO;
+    private final ZonaDAO zonaDAO;
 
     public AsignacionVehiculoGarageService() {
         this.dao = new AsignacionVehiculoGarageDAOImpl();
-        
+        this.socioDAO = new SocioDAOImpl();
+        this.zonaDAO = new ZonaDAOImpl();
     }
 
-    public void crearAsignacion(AsignacionVehiculoGarageDTO dto) throws ErrorNegocio {
-        VehiculoService vehiculoService= new VehiculoService();
-        GarageService garageService= new GarageService();
-        
-        // 1. Validaciones básicas de integridad (nivel DTO)
-        if (dto == null) {
-            throw new ErrorNegocio("Error: El objeto de asignación no puede ser nulo.");
-        }
-        if (dto.getVehiculo() == null || dto.getVehiculo().getId() <= 0) {
-            throw new ErrorNegocio("Error: Se requiere un vehículo válido para la asignación.");
-        }
-        if (dto.getGarage() == null || dto.getGarage().getId() <= 0) {
-            throw new ErrorNegocio("Error: Se requiere un garaje válido para la asignación.");
-        }
-        if (dto.getFechaAsignacionGarage() == null) {
-            throw new ErrorNegocio("Error: La fecha de asignación es obligatoria.");
-        }
+    /**
+     * Registra la asignación de un vehículo a un garaje.
+     * Contiene las reglas de negocio de ocupación, pertenencia, compatibilidad y fechas.
+     */
+    public void crearAsignacion(AsignacionVehiculoGarageDTO dto)
+            throws ErrorNegocio, GarageYaOcupadoException, ZonaSinCapacidadException {
 
-        // 2. RECUPERAR OBJETOS COMPLETOS DE LA BASE DE DATOS (Lógica del Servicio)
+        VehiculoService vehiculoService = new VehiculoService();
+        GarageService garageService = new GarageService();
+
+        // 1. REGLA DE NEGOCIO: Recuperar entidades desde sus respectivos servicios
         Vehiculo vehiculoCompleto;
-        Garage garageCompleto; // Si GarageService retorna DTO, harías lo mismo
+        Garage garageCompleto;
         try {
-            // Convertimos el DTO retornado por el servicio a Modelo usando el Mapper
             VehiculoDTO vDto = vehiculoService.buscarPorId(dto.getVehiculo().getId());
             vehiculoCompleto = VehiculoMapper.toModel(vDto);
 
-            // Lo mismo para Garage si GarageService retorna DTO
+            // garageService.buscarPorId ya devuelve directamente un objeto Garage
             garageCompleto = garageService.buscarPorId(dto.getGarage().getId());
+
         } catch (RegistroNoEncontradoException e) {
-            throw new ErrorNegocio("Error al buscar vehículo o garaje: " + e.getMessage());
+            throw new ErrorNegocio("Error de negocio: No se puede realizar la asignación. " + e.getMessage());
         }
 
-        // 3. MApeo: Ahora convertimos el DTO a Modelo (pasando los objetos completos)
-        // IMPORTANTE: El mapper debe estar actualizado para recibir esta estructura
-        AsignacionVehiculoGarage nuevaAsignacion = AsignacionVehiculoGarageMapper.toModel(dto, garageCompleto, vehiculoCompleto);
-
-        // 4. Validación de Regla de Negocio: Compatibilidad de Tipo de Vehículo
-        if (vehiculoCompleto.getTipo() != garageCompleto.getZona().getTipoVehiculo()) {
-            throw new ErrorNegocio("Error: El vehículo de tipo " + vehiculoCompleto.getTipo()
-                    + " no puede ser asignado en una zona destinada a " + garageCompleto.getZona().getTipoVehiculo() + ".");
+        // 2. REGLA DE NEGOCIO: Excepción específica si el garaje ya está ocupado por un vehículo
+        if (dao.buscarPorGarage(garageCompleto) != null) {
+            throw new GarageYaOcupadoException("Error: El garaje N° " + garageCompleto.getNumeroGarage()
+                    + " ya se encuentra ocupado por otro vehículo.");
         }
 
-        // 5. Validación de Regla de Negocio: Fechas
-        if (garageCompleto.getFechaCompra() != null) {
-            if (nuevaAsignacion.getFechaAsignacionGarage().isBefore(garageCompleto.getFechaCompra())) {
-                throw new ErrorNegocio("Error: La fecha de asignación no puede ser anterior a la fecha de compra del garaje (" + garageCompleto.getFechaCompra() + ").");
+        // 3. REGLA DE NEGOCIO: El vehículo no puede tener otra asignación activa
+        if (buscarPorVehiculo(vehiculoCompleto.getId()) != null) {
+            throw new ErrorNegocio("Error de negocio: El vehículo con matrícula " + vehiculoCompleto.getMatricula()
+                    + " ya está asignado a un garaje en el sistema.");
+        }
+
+        // 4. REGLA DE NEGOCIO: El vehículo debe pertenecer al socio dueño del garaje
+        if (garageCompleto.getSocioPropietario() != null) {
+            if (vehiculoCompleto.getSocioId() != garageCompleto.getSocioPropietario().getId()) {
+                throw new ErrorNegocio("Error de negocio: El vehículo no pertenece al socio propietario de este garaje.");
             }
         }
 
-        // 6. Validación de Capacidad de la Zona
+        // 5. Mapeo a Modelo
+        AsignacionVehiculoGarage nuevaAsignacion = AsignacionVehiculoGarageMapper.toModel(dto, garageCompleto, vehiculoCompleto);
+
+        // 6. REGLA DE NEGOCIO: Compatibilidad de tipo de vehículo con el tipo de la Zona
+        if (vehiculoCompleto.getTipo() != garageCompleto.getZona().getTipoVehiculo()) {
+            throw new ErrorNegocio("Error de negocio: El vehículo de tipo " + vehiculoCompleto.getTipo()
+                    + " no es compatible con la zona asignada a " + garageCompleto.getZona().getTipoVehiculo() + ".");
+        }
+
+        // 7. REGLA DE NEGOCIO: Consistencia de fechas (Asignación vs Compra)
+        if (garageCompleto.getFechaCompra() != null) {
+            if (nuevaAsignacion.getFechaAsignacionGarage().isBefore(garageCompleto.getFechaCompra())) {
+                throw new ErrorNegocio("Error de negocio: La fecha de asignación no puede ser anterior a la fecha de compra del garaje ("
+                        + garageCompleto.getFechaCompra() + ").");
+            }
+        }
+
+        // 8. REGLA DE NEGOCIO: Excepción específica de capacidad máxima en la Zona
         Zona zona = garageCompleto.getZona();
         int capacidadMaxima = zona.getCapacidadVehiculos();
         int vehiculosActuales = contarVehiculosActivosEnZona(zona);
 
         if (vehiculosActuales >= capacidadMaxima) {
             throw new ZonaSinCapacidadException("Error: La zona '" + zona.getLetra()
-                    + "' ha alcanzado su capacidad máxima de " + capacidadMaxima + " vehículos.");
+                    + "' ha alcanzado su capacidad máxima permitida de " + capacidadMaxima + " vehículos.");
         }
 
-        // 7. Persistir el objeto Modelo
+        // 9. Persistir asignación
         dao.guardar(nuevaAsignacion);
     }
-
     private int contarVehiculosActivosEnZona(Zona zona) {
         List<AsignacionVehiculoGarage> todas = dao.listarTodas();
         int contador = 0;
         for (AsignacionVehiculoGarage asignacion : todas) {
-            // Verificamos que la asignación no esté dada de baja (si tuviera ese campo)
-            // Y que el garage pertenezca a la zona buscada
             if (asignacion.getGarage() != null && asignacion.getGarage().getZona() != null) {
                 if (asignacion.getGarage().getZona().getId() == zona.getId()) {
                     contador++;
@@ -106,6 +122,22 @@ public class AsignacionVehiculoGarageService {
         return contador;
     }
 
+    private Socio buscarSocioExistente(String identificadorSocio) {
+        if (identificadorSocio == null || identificadorSocio.trim().isEmpty() || identificadorSocio.equalsIgnoreCase("Libre")) {
+            return null;
+        }
+
+        Socio porDni = socioDAO.buscarPorDni(identificadorSocio);
+        if (porDni != null) {
+            return porDni;
+        }
+
+        return socioDAO.listarTodos().stream()
+                .filter(s -> s.getNombre() != null && s.getNombre().equalsIgnoreCase(identificadorSocio))
+                .findFirst()
+                .orElse(null);
+    }
+
     public AsignacionVehiculoGarage buscarPorGarage(Garage garage) {
         return dao.buscarPorGarage(garage);
     }
@@ -113,14 +145,11 @@ public class AsignacionVehiculoGarageService {
     public List<AsignacionVehiculoGarage> listarTodas() {
         return dao.listarTodas();
     }
-    
+
     public AsignacionVehiculoGarage buscarPorVehiculo(int vehiculoId) {
-    // Filtrar en el DAO de asignaciones por el ID del vehículo
-    return dao.listarTodas().stream()
-              .filter(a -> a.getVehiculo().getId() == vehiculoId)
-              .findFirst()
-              .orElse(null);
-}
-    
-    
+        return dao.listarTodas().stream()
+                .filter(a -> a.getVehiculo().getId() == vehiculoId)
+                .findFirst()
+                .orElse(null);
+    }
 }
