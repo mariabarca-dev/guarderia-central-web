@@ -46,21 +46,32 @@ public class VehiculoDAOImpl implements VehiculoDAO{
         reescribirArchivo(lista);
     }
 
+    /*
+    List<Socio> lista = listarTodos();
+        lista.removeIf(s -> s.getId() == id);
+        reescribirArchivo(lista);
+     */
     @Override
-    public void eliminar(String matricula) {
+    public void eliminar(Integer id) {
+        List<Vehiculo>lista= listarTodos();
+        lista.removeIf( v -> v.getId()==id );
+    }
+
+    @Override
+    public void eliminar(String matricula) {//
         List<Vehiculo> lista = listarTodos();
         lista.removeIf(v -> v.getMatricula().equals(matricula));
         reescribirArchivo(lista);
     }
 
     @Override
-    public Vehiculo buscarPorId(int id) {
+    public Vehiculo buscarPorId(Integer id) {
         return listarTodos().stream()
                 .filter(v -> v.getId() == id)
                 .findFirst()
                 .orElse(null);
     }
-    
+
     @Override
     public Vehiculo buscarPorMatricula(String matricula) {
         return listarTodos().stream()
@@ -98,6 +109,9 @@ public class VehiculoDAOImpl implements VehiculoDAO{
         }
         return lista;
     }
+
+
+
 
     private void reescribirArchivo(List<Vehiculo> lista) {
         // Sobrescribe el archivo completamente con la lista actualizada
