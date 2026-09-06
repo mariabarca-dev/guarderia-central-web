@@ -39,7 +39,7 @@ public class ZonaDAOImpl implements ZonaDAO {
         }
         reescribirArchivo(lista);
     }
-
+//dani
     // Cumple con GenericDAO<Zona, Integer>
     @Override
     public void eliminar(Integer id) {
