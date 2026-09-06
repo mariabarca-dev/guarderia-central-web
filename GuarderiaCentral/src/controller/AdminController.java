@@ -371,6 +371,17 @@ public class AdminController {
         return resultado;
     }
 
+    public EmpleadoDTO buscarEmpleadoPorId(int id) {
+        try {
+            return empleadoService.listarTodos().stream()
+                    .filter(e -> e.getId() == id)
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /////DANIIIIIII
 
 
@@ -385,5 +396,30 @@ public class AdminController {
         }
         return null; // No encontrado
     }
+
+
+    public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
+
+        asignacionEmpleadoZonaService.crearAsignacion(dto);
+    }
+
+    public List<EmpleadoDTO> listarEmpleadosPorZona(int zonaId) {
+        // Buscamos las asignaciones de esa zona y mapeamos los empleados a DTO
+        return asignacionEmpleadoZonaService.listarTodas().stream()
+                .filter(a -> a.getZona().getId() == zonaId)
+                .map(a -> new EmpleadoDTO(
+                        a.getEmpleado().getId(),
+                        a.getEmpleado().getNombre(),
+                        a.getEmpleado().getDireccion(),
+                        a.getEmpleado().getTelefono(),
+                        a.getEmpleado().getNombreUsuario(),
+                        a.getEmpleado().getClave(),
+                        a.getEmpleado().getRol(),
+                        a.getEmpleado().getCodigo(),
+                        a.getEmpleado().getEspecialidad()
+                ))
+                .toList();
+    }
+
 
 }

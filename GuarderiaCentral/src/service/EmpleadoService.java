@@ -19,7 +19,7 @@ import util.IdGenerator;
 public class EmpleadoService {
 
     private EmpleadoDAO empleadoDAO;
-    private final EmpleadoService empleadoService = new EmpleadoService();
+    //private final EmpleadoService empleadoService = new EmpleadoService();
 
 
     public EmpleadoService() {
@@ -105,7 +105,7 @@ public class EmpleadoService {
 
     //ESTO VA EN EmpleadoService
     public EmpleadoDTO buscarEmpleadoPorId(int idEmpleado) {
-        List<EmpleadoDTO> empleados = empleadoService.listarTodos();
+        List<EmpleadoDTO> empleados = listarTodos();
         for (EmpleadoDTO e : empleados) {
             if (e.getId() == idEmpleado) {
                 return e;

@@ -366,6 +366,7 @@ public class MenuAdminImpl extends VistaImpl {
         // también los contenga o agrégalos mediante un setter:
         // asignacion.setIdsVehiculos(idsSeleccionados);
         adminController.asignarEmpleadoAZona(asignacion);
+
         System.out.println("Empleado asignado correctamente a la zona.");
     }
 

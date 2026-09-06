@@ -22,7 +22,7 @@ public class AsignacionEmpleadoZonaService {
     private AsignacionEmpleadoZonaDAO dao;
     private final ZonaService zonaService = new ZonaService();
     private final EmpleadoService empleadoService;
-    private final AsignacionEmpleadoZonaService asignacionEmpleadoZonaService = new AsignacionEmpleadoZonaService();
+    //private final AsignacionEmpleadoZonaService asignacionEmpleadoZonaService = new AsignacionEmpleadoZonaService();
 
 
     public AsignacionEmpleadoZonaService() {
@@ -74,7 +74,7 @@ public class AsignacionEmpleadoZonaService {
     }
 
     //EXTRAÍDO DEL AdminController
-    //ESTO VA EN AsignacionEmpleadoZonaService
+
     public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
         try {
             // Validación: que la zona exista y tenga capacidad
@@ -97,7 +97,7 @@ public class AsignacionEmpleadoZonaService {
             }
 
             // Delegamos al service
-            asignacionEmpleadoZonaService.crearAsignacion(dto);
+            crearAsignacion(dto);
 
         } catch (ErrorNegocio e) {
             throw e; // Propagamos la excepción de negocio
@@ -109,7 +109,7 @@ public class AsignacionEmpleadoZonaService {
 
     //ESTO VA EN AsignacionEmpleadoZonaService
     public void listarEmpleadosPorZona(int idZona) {
-        List<AsignacionEmpleadoZona> asignaciones = asignacionEmpleadoZonaService.listarTodas();
+        List<AsignacionEmpleadoZona> asignaciones = listarTodas();
 
         System.out.println("Empleados asignados a la zona " + idZona + ":");
         for (AsignacionEmpleadoZona asg : asignaciones) {
