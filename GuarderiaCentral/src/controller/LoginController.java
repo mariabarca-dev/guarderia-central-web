@@ -53,7 +53,7 @@ public class LoginController implements Controlador {
 
                 case ADMINISTRADOR:
                     AdminController adminCtrl = new AdminController(usuarioModel);
-                    new MenuAdminImpl(adminCtrl).mostrar();
+                    new MenuAdminImpl(adminCtrl,usuarioModel).mostrar();
                     break;
 
                 case EMPLEADO:

@@ -19,7 +19,7 @@ public class AdminController {
     private final SocioService socioService = new SocioService();
     private final EmpleadoService empleadoService = new EmpleadoService();
     private final AdministradorService administradorservice = new AdministradorService();
-    private final VehiculoService vehiculoService = new VehiculoService();
+  //  private final VehiculoService vehiculoService = new VehiculoService();
     private final GarageService garageService = new GarageService();
     private final ZonaService zonaService = new ZonaService();
     private final AsignacionVehiculoGarageService asignacionVehiculoGarageService = new AsignacionVehiculoGarageService();
@@ -49,7 +49,7 @@ public class AdminController {
     public List<EmpleadoDTO> listarTodosLosEmpleados() {
         return empleadoService.listarTodos();
     }
-
+/*
     // --- Vehículos ---
     public List<VehiculoDTO> listarTodosLosVehiculos() {
         return vehiculoService.listarTodos();
@@ -97,8 +97,8 @@ public class AdminController {
             throw new ErrorNegocio("Error inesperado al modificar el vehículo: " + e.getMessage());
         }
     }
-
-    // --- Garajes ---
+*/
+// --- Garajes ---
     public List<GarageDTO> listarTodosLosGarages() {
         return garageService.listarTodos();
     }
@@ -258,6 +258,8 @@ public class AdminController {
         }
     }
 
+/*
+
     public void registrarVehiculo(VehiculoDTO dto) throws ErrorNegocio {
         try {
             // Validar que la matrícula no esté duplicada
@@ -277,7 +279,7 @@ public class AdminController {
             throw new ErrorNegocio("Error inesperado al registrar el vehículo: " + e.getMessage());
         }
     }
-
+*/
     //////////////////////////////////////////////////77
     ////EUGEEEE MMMMMETODOS
     /////////////////////////////////////////////////7
@@ -317,7 +319,7 @@ public GarageDTO buscarGaragePorId(int id) {
         asignacionVehiculoGarageService.crearAsignacion(dto);
 
     }
-
+/*
     public List<VehiculoDTO> listarVehiculosPorZona(int zonaId) {
         // 1. Obtenemos todos los vehículos
         List<VehiculoDTO> todosLosVehiculos = vehiculoService.listarTodos();
@@ -335,7 +337,7 @@ public GarageDTO buscarGaragePorId(int id) {
         }
         return resultado;
     }
-
+*/
     /////DANIIIIIII
 
 public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {

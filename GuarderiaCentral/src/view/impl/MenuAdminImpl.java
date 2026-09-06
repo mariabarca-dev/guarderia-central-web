@@ -1,6 +1,7 @@
 package view.impl;
 
 import controller.AdminController;
+import controller.VehiculoController;
 import dto.*;
 
 // 🔹 Importaciones de excepciones necesarias [cite: 2]
@@ -26,10 +27,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 // 🔹 Modelos usados solo LOCALMENTE en la vista para interacción 
-import model.Administrador;
-import model.Empleado;
-import model.Rol;
-import model.TipoVehiculo;
+import model.*;
 import service.ZonaService;
 
 /**
@@ -56,10 +54,13 @@ public class MenuAdminImpl extends VistaImpl {
     private static final int LIMITE_CAPACIDAD2 = 15;
 
     private final AdminController adminController;
+    private final VehiculoController vehiculoController;
+
     private final Scanner scanner = new Scanner(System.in);
 
-    public MenuAdminImpl(AdminController adminController) {
+    public MenuAdminImpl(AdminController adminController, Usuario usuarioLogeado) {
         this.adminController = adminController;
+        this.vehiculoController=new VehiculoController(usuarioLogeado);
     }
 
     @Override
@@ -276,7 +277,8 @@ public class MenuAdminImpl extends VistaImpl {
         System.out.println("Operación: Ocupación de Garaje");
 
         int vehiculoId = leerNumeroPositivo("ID del Vehículo");
-        VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(vehiculoId);
+        VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(vehiculoId);
+        //VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(vehiculoId);
         if (vehiculo == null) {
             System.out.println("Error: no existe un vehículo con ese ID.");
             return;
@@ -339,7 +341,9 @@ public class MenuAdminImpl extends VistaImpl {
         int vehiculosACargo = leerNumeroPositivo("Cantidad de vehículos bajo su cargo");
 
         // 🔹 Validación: usamos el DTO de zona para obtener la capacidad o consultar al controller
-        List<VehiculoDTO> vehiculosEnZona = adminController.listarVehiculosPorZona(zonaId);
+
+        List<VehiculoDTO> vehiculosEnZona = vehiculoController.listarVehiculosPorZona(zonaId);
+        //List<VehiculoDTO> vehiculosEnZona = adminController.listarVehiculosPorZona(zonaId);
         int cantidadReal = (vehiculosEnZona != null) ? vehiculosEnZona.size() : 0;
 
         if (cantidadReal < vehiculosACargo) {
@@ -383,7 +387,8 @@ public class MenuAdminImpl extends VistaImpl {
                 break;
             case 2:
                 int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
-                adminController.listarVehiculosPorZona(idZ);
+                 vehiculoController.listarVehiculosPorZona(idZ);
+               // adminController.listarVehiculosPorZona(idZ);
                 break;
             case 3:
                 int idZonaEmp = leerNumeroPositivo("Ingrese ID de la Zona");
@@ -1104,7 +1109,9 @@ public class MenuAdminImpl extends VistaImpl {
                 System.out.println("Error: matrícula inválida (máx 7 caracteres alfanuméricos).");
             } else {
                 // Validar que no esté duplicada en la lista de vehículos
-                List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
+
+                List<VehiculoDTO> vehiculos  =  vehiculoController.listarTodosLosVehiculos();
+                //List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
                 boolean duplicada = false;
                 for (VehiculoDTO v : vehiculos) {
                     if (v.getMatricula().equalsIgnoreCase(matricula)) {
@@ -1169,7 +1176,9 @@ public class MenuAdminImpl extends VistaImpl {
         );
 
         try {
-            adminController.registrarVehiculo(nuevoVehiculo);
+
+              vehiculoController.registrarVehiculo(nuevoVehiculo);
+            //adminController.registrarVehiculo(nuevoVehiculo);
             System.out.println("Vehículo registrado correctamente.");
         } catch (Exception e) {
             System.out.println("Error al registrar vehículo: " + e.getMessage());
@@ -1190,7 +1199,9 @@ public class MenuAdminImpl extends VistaImpl {
 
     private void modificarVehiculo(int idVehiculo) throws ErrorNegocio {
         System.out.println("--- Lista de Vehículos ---");
-        List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
+
+        List<VehiculoDTO> vehiculos = vehiculoController.listarTodosLosVehiculos();
+        //List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
         for (VehiculoDTO v : vehiculos) {
             System.out.println("ID: " + v.getId() + " | Nombre: " + v.getNombre()
                     + " | Matrícula: " + v.getMatricula()
@@ -1294,7 +1305,10 @@ public class MenuAdminImpl extends VistaImpl {
         }
 
         // 🔹 Persistimos el DTO actualizado
-        adminController.modificarVehiculo(vehiculo);
+
+
+         vehiculoController.modificarVehiculo(vehiculo);
+        //adminController.modificarVehiculo(vehiculo);
         System.out.println("Vehículo actualizado correctamente.");
 
     }
@@ -1302,12 +1316,16 @@ public class MenuAdminImpl extends VistaImpl {
     private void eliminarVehiculo() {
         System.out.println("--- Lista de Vehículos ---");
         // Se mantiene la llamada para que el usuario visualice la lista actual
-        adminController.listarTodosLosVehiculos();
+
+        vehiculoController.listarTodosLosVehiculos();
+        //adminController.listarTodosLosVehiculos();
 
         int idVehiculo = leerNumeroPositivo("Ingrese el ID del vehículo a eliminar");
 
         // Validamos la existencia utilizando el controlador antes de proceder
-        VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(idVehiculo);
+
+        VehiculoDTO vehiculo   = vehiculoController.buscarVehiculoPorId(idVehiculo);
+         //VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(idVehiculo);
 
         if (vehiculo == null) {
             System.out.println("No se encontró ningún vehículo con ese ID.");
@@ -1315,7 +1333,9 @@ public class MenuAdminImpl extends VistaImpl {
         }
 
         // Solicitamos al controlador la eliminación mediante el ID
-        adminController.eliminarVehiculo(idVehiculo);
+
+        vehiculoController.eliminarVehiculo(idVehiculo);
+        //adminController.eliminarVehiculo(idVehiculo);
 
         System.out.println("Vehículo eliminado correctamente.");
     }
