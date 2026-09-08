@@ -7,12 +7,8 @@ import java.util.ArrayList;
 import mapper.*;
 import model.Usuario;
 import java.util.List;
-import model.AsignacionEmpleadoZona;
 import model.AsignacionVehiculoGarage;
-import model.Empleado;
 import model.Garage;
-
-//tercera prueba de conexion
 
 public class AdminController {
 
@@ -33,7 +29,7 @@ public class AdminController {
     public String registrarAdministradorDesdeVista(String nombre, String direccion, String telefono,
                                                    String nombreUsuario, String clave, String rolStr) {
 
-        // --- 1. VALIDACIONES DE SINTAXIS Y FORMATO (Controller) ---
+        // 1. VALIDACIONES DE SINTAXIS Y FORMATO (Controller)
         if (nombre == null || nombre.isBlank() || nombreUsuario == null || nombreUsuario.isBlank()) {
             return "Error de sintaxis: El nombre y el usuario son obligatorios.";
         }
@@ -42,7 +38,7 @@ public class AdminController {
             return "Error de formato: El teléfono solo debe contener números.";
         }
 
-        // --- 2. ARMADO DEL DTO Y LLAMADA AL SERVICE (Reglas de Negocio) ---
+        // 2. ARMADO DEL DTO Y LLAMADA AL SERVICE (Reglas de Negocio)
         try {
             AdministradorDTO dto = new AdministradorDTO();
             dto.setNombre(nombre.trim());
@@ -50,13 +46,11 @@ public class AdminController {
             dto.setTelefono(telefono);
             dto.setNombreUsuario(nombreUsuario.trim());
             dto.setClave(clave);
-            // ... setear rol
 
             administradorservice.registrarAdministrador(dto);
             return "Éxito: Administrador registrado correctamente.";
 
         } catch (ErrorNegocio e) {
-            // Aquí el controlador atrapa la regla de negocio que viene del Service
             return "Error de negocio: " + e.getMessage();
         }
     }
@@ -68,10 +62,8 @@ public class AdminController {
 
     public SocioDTO buscarSocioPorId(int id) {
         try {
-            // Llamamos al servicio y retornamos el resultado
             return socioService.buscarPorId(id);
-        } catch (RegistroNoEncontradoException e) {
-            // Si no se encuentra, retornamos null para que el menú sepa que no existe
+        } catch (ErrorNegocio e) {
             return null;
         }
     }
@@ -79,6 +71,10 @@ public class AdminController {
     // --- Empleados ---
     public List<EmpleadoDTO> listarTodosLosEmpleados() {
         return empleadoService.listarTodos();
+    }
+
+    public EmpleadoDTO buscarEmpleadoPorId(int id) {
+        return empleadoService.buscarEmpleadoPorId(id);
     }
 
     // --- Vehículos ---
@@ -89,44 +85,51 @@ public class AdminController {
     public VehiculoDTO buscarVehiculoPorId(int id) {
         try {
             return vehiculoService.buscarPorId(id);
-        } catch (Exception e) {
+        } catch (ErrorNegocio e) {
             return null;
         }
     }
 
-    // El servicio requiere Matrícula (String), el menú tiene ID (int). Hacemos la conversión aquí:
     public void eliminarVehiculo(int id) {
         try {
             VehiculoDTO v = vehiculoService.buscarPorId(id);
             if (v != null) {
                 vehiculoService.eliminarVehiculo(v.getMatricula());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ErrorNegocio e) {
+            System.out.println("Error al eliminar vehículo: " + e.getMessage());
         }
     }
 
-    //ESTO VA EN VehiculoService
-    public void modificarVehiculo(VehiculoDTO dto) throws ErrorNegocio, MatriculaDuplicadaException {
+    public void modificarVehiculo(VehiculoDTO dto) throws ErrorNegocio {
         try {
-            // Validar matrícula duplicada (excepto si es el mismo vehículo que estamos modificando)
             List<VehiculoDTO> existentes = vehiculoService.listarTodos();
             for (VehiculoDTO v : existentes) {
                 if (v.getMatricula().equalsIgnoreCase(dto.getMatricula()) && v.getId() != dto.getId()) {
-                    throw new MatriculaDuplicadaException("La matrícula " + dto.getMatricula() + " ya está registrada.");
+                    throw new ErrorNegocio("La matrícula " + dto.getMatricula() + " ya está registrada.");
                 }
             }
-
-            // Actualizar vehículo
             vehiculoService.actualizarVehiculo(dto);
-
-        } catch (MatriculaDuplicadaException e) {
-            throw e; // Propagamos la excepción específica
         } catch (ErrorNegocio e) {
-            throw e; // Propagamos otras reglas de negocio
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new ErrorNegocio("Error inesperado al modificar el vehículo: " + e.getMessage());
+        }
+    }
+
+    public void registrarVehiculo(VehiculoDTO dto) throws ErrorNegocio {
+        try {
+            List<VehiculoDTO> existentes = vehiculoService.listarTodos();
+            for (VehiculoDTO v : existentes) {
+                if (v.getMatricula().equalsIgnoreCase(dto.getMatricula())) {
+                    throw new ErrorNegocio("Ya existe un vehículo con matrícula: " + dto.getMatricula());
+                }
+            }
+            vehiculoService.registrarVehiculo(dto);
+        } catch (ErrorNegocio e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ErrorNegocio("Error inesperado al registrar el vehículo: " + e.getMessage());
         }
     }
 
@@ -139,92 +142,12 @@ public class AdminController {
         return garageService.consultarDisponibilidadGarages();
     }
 
-    // --- Zonas ---
-    public List<ZonaDTO> listarTodasLasZonas() {
-        return zonaService.listarTodas();
-    }
-
-    // El servicio usa 'letra' (String). El menú debe buscar por letra.
-    public ZonaDTO buscarZonaPorLetra(String letra) {
+    public GarageDTO buscarGaragePorId(int id) {
         try {
-            return zonaService.buscarPorLetra(letra);
-        } catch (Exception e) {
+            Garage garage = garageService.buscarPorId(id);
+            return GarageMapper.toDto(garage);
+        } catch (ErrorNegocio e) {
             return null;
-        }
-    }
-
-    public void modificarZona(ZonaDTO z) {
-        try {
-            zonaService.actualizarZona(z);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // El servicio usa 'letra' (String) para eliminar.
-    public void eliminarZonaPorLetra(String letra) {
-        try {
-            zonaService.eliminarZona(letra);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // --- Asignaciones ---
-    //  public AsignacionVehiculoGarageDTO buscarAsignacionPorGarage(int id) {
-    //      return asignacionVehiculoGarageService.buscarPorGarage(id);
-    //  }
-    // --- Dentro de AdminController.java ---
-// 🔹 Corrección del método para buscar asignación por ID de garaje
-    public AsignacionVehiculoGarageDTO buscarAsignacionPorGarage(int id) {
-        try {
-            // 1. Primero, buscamos el objeto Garage completo usando el ID
-            Garage garageCompleto = garageService.buscarPorId(id);
-
-            // 2. Ahora, pasamos el objeto Garage completo al servicio
-            AsignacionVehiculoGarage asignacion = asignacionVehiculoGarageService.buscarPorGarage(garageCompleto);
-
-            // 3. Mapeamos el resultado a DTO y lo retornamos
-            return AsignacionVehiculoGarageMapper.toDto(asignacion);
-
-        } catch (RegistroNoEncontradoException e) {
-            // Si no se encuentra el garaje o la asignación, retornamos null para el menú
-            return null;
-        } catch (Exception e) {
-            // Manejo de otros errores técnicos
-            e.printStackTrace();
-            return null; // O podrías lanzar una excepción personalizada de controlador
-        }
-    }
-
-    // --- Usuarios ---
-    public List<UsuarioDTO> listarTodosLosUsuarios() {
-        return usuarioService.listarTodos();
-    }
-
-    public void modificarUsuario(UsuarioDTO u) {
-        try {
-            usuarioService.actualizarUsuario(u);
-        } catch (Exception e) {
-        }
-    }
-
-    public void eliminarUsuario(int id) {
-        try {
-            usuarioService.eliminarUsuario(id);
-        } catch (Exception e) {
-        }
-    }
-
-    public void registrarUsuario(UsuarioDTO usuario) throws ErrorNegocio {
-        if (usuario instanceof SocioDTO socioDTO) {
-            socioService.registrarSocio(socioDTO);
-        } else if (usuario instanceof EmpleadoDTO empleadoDTO) {
-            empleadoService.registrarEmpleado(empleadoDTO);
-        } else if (usuario instanceof AdministradorDTO administradorDTO) {
-            administradorservice.registrarAdministrador(administradorDTO);
-        } else {
-            throw new ErrorNegocio("Tipo de usuario no soportado: " + usuario.getClass().getSimpleName());
         }
     }
 
@@ -232,11 +155,8 @@ public class AdminController {
         try {
             garageService.registrarGarage(dto);
         } catch (ErrorNegocio e) {
-            // Propagamos la excepción para que el menú la capture y muestre el mensaje
             throw e;
         } catch (Exception e) {
-            // Cualquier otro error inesperado
-            e.printStackTrace();
             throw new ErrorNegocio("Error inesperado al registrar el garaje: " + e.getMessage());
         }
     }
@@ -244,12 +164,11 @@ public class AdminController {
     public void modificarGarage(GarageDTO garage) {
         try {
             garageService.actualizarGarage(garage);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ErrorNegocio e) {
+            System.out.println("Error al modificar garaje: " + e.getMessage());
         }
     }
 
-    //ESTO VA EN GarageService
     public void eliminarGarage(int id) {
         try {
             GarageDTO garageEncontrado = null;
@@ -265,128 +184,24 @@ public class AdminController {
             } else {
                 System.out.println("No se encontró ningún garaje con ese ID.");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    //ESTO VA EN ZonaService
-    public void registrarZona(ZonaDTO dto) throws ErrorNegocio {
-        try {
-            // Validar existencia antes de registrar
-            try {
-                ZonaDTO existente = zonaService.buscarPorLetra(String.valueOf(dto.getLetra()));
-                if (existente != null) {
-                    throw new ErrorNegocio("Ya existe una zona con la letra: " + dto.getLetra());
-                }
-            } catch (RegistroNoEncontradoException e) {
-                // Si no se encuentra, podemos continuar
-            }
-
-            zonaService.registrarZona(dto);
         } catch (ErrorNegocio e) {
-            throw e; // Propagamos para que el menú lo capture
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ErrorNegocio("Error inesperado al registrar la zona: " + e.getMessage());
+            System.out.println("Error al eliminar garaje: " + e.getMessage());
         }
     }
 
-    //ESTO VA EN VehiculoService
-    public void registrarVehiculo(VehiculoDTO dto) throws ErrorNegocio {
-        try {
-            // Validar que la matrícula no esté duplicada
-            List<VehiculoDTO> existentes = vehiculoService.listarTodos();
-            for (VehiculoDTO v : existentes) {
-                if (v.getMatricula().equalsIgnoreCase(dto.getMatricula())) {
-                    throw new ErrorNegocio("Ya existe un vehículo con matrícula: " + dto.getMatricula());
-                }
-            }
+    // --- Zonas ---
+    public List<ZonaDTO> listarTodasLasZonas() {
+        return zonaService.listarTodas();
+    }
 
-            // Registrar vehículo
-            vehiculoService.registrarVehiculo(dto);
+    public ZonaDTO buscarZonaPorLetra(String letra) {
+        try {
+            return zonaService.buscarPorLetra(letra);
         } catch (ErrorNegocio e) {
-            throw e; // Propagamos para que el menú lo capture
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ErrorNegocio("Error inesperado al registrar el vehículo: " + e.getMessage());
-        }
-    }
-
-    //////////////////////////////////////////////////77
-    ////EUGEEEE MMMMMETODOS
-    /////////////////////////////////////////////////7
-    
-    
-    // --- Dentro de AdminController.java ---
-
-    public GarageDTO buscarGaragePorId(int id) {
-        try {
-            // Llamamos al servicio, que nos devuelve el modelo
-            Garage garage = garageService.buscarPorId(id);
-
-            // Convertimos el modelo a DTO usando el Mapper
-            return GarageMapper.toDto(garage);
-        } catch (RegistroNoEncontradoException e) {
-            // Si no existe, retornamos null para que el menú sepa qué hacer
             return null;
         }
     }
 
-    public void asignarPropiedadGarage(PropiedadGarageDTO dto) throws ErrorNegocio {
-        try {
-            // Delegamos al servicio
-            propiedadGarageService.registrarPropiedad(dto);
-        } catch (ErrorNegocio e) {
-            // Propagamos la excepción específica de negocio (la fecha inválida)
-            throw e;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ErrorNegocio("Error inesperado al asignar la propiedad: " + e.getMessage());
-        }
-    }
-
-    public void asignarVehiculoAGarageDTO(AsignacionVehiculoGarageDTO dto) throws ErrorNegocio {
-
-        // Delegamos al servicio la lógica completa (validaciones, fechas, capacidad, etc.)
-        asignacionVehiculoGarageService.crearAsignacion(dto);
-
-    }
-
-    public List<VehiculoDTO> listarVehiculosPorZona(int zonaId) {
-        // 1. Obtenemos todos los vehículos
-        List<VehiculoDTO> todosLosVehiculos = vehiculoService.listarTodos();
-        List<VehiculoDTO> resultado = new ArrayList<>();
-
-        // 2. Filtramos. Necesitamos saber si el vehículo está en un garaje de esa zona.
-        // Usamos el servicio de asignaciones para verificar la ubicación.
-        for (VehiculoDTO v : todosLosVehiculos) {
-            // Necesitas un método en tu asignacionService que busque por vehículo
-            var asignacion = asignacionVehiculoGarageService.buscarPorVehiculo(v.getId());
-
-            if (asignacion != null && asignacion.getGarage().getZona().getId() == zonaId) {
-                resultado.add(v);
-            }
-        }
-        return resultado;
-    }
-
-    public EmpleadoDTO buscarEmpleadoPorId(int id) {
-        try {
-            return empleadoService.listarTodos().stream()
-                    .filter(e -> e.getId() == id)
-                    .findFirst()
-                    .orElse(null);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /////DANIIIIIII
-
-
-
-    //ESTO VA EN ZonaService
     public ZonaDTO buscarZonaPorId(int idZona) {
         List<ZonaDTO> zonas = zonaService.listarTodas();
         for (ZonaDTO z : zonas) {
@@ -394,32 +209,128 @@ public class AdminController {
                 return z;
             }
         }
-        return null; // No encontrado
+        return null;
     }
 
+    public void registrarZona(ZonaDTO dto) throws ErrorNegocio {
+        try {
+            try {
+                ZonaDTO existente = zonaService.buscarPorLetra(String.valueOf(dto.getLetra()));
+                if (existente != null) {
+                    throw new ErrorNegocio("Ya existe una zona con la letra: " + dto.getLetra());
+                }
+            } catch (ErrorNegocio e) {
+                // Si no se encuentra la zona, procedemos con el registro
+            }
+
+            zonaService.registrarZona(dto);
+        } catch (ErrorNegocio e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ErrorNegocio("Error inesperado al registrar la zona: " + e.getMessage());
+        }
+    }
+
+    public void modificarZona(ZonaDTO z) {
+        try {
+            zonaService.actualizarZona(z);
+        } catch (ErrorNegocio e) {
+            System.out.println("Error al modificar zona: " + e.getMessage());
+        }
+    }
+
+    public void eliminarZonaPorLetra(String letra) {
+        try {
+            zonaService.eliminarZona(letra);
+        } catch (ErrorNegocio e) {
+            System.out.println("Error al eliminar zona: " + e.getMessage());
+        }
+    }
+
+    // --- Asignaciones y Propiedades ---
+    public AsignacionVehiculoGarageDTO buscarAsignacionPorGarage(int id) {
+        try {
+            Garage garageCompleto = garageService.buscarPorId(id);
+            AsignacionVehiculoGarage asignacion = asignacionVehiculoGarageService.buscarPorGarage(garageCompleto);
+            return AsignacionVehiculoGarageMapper.toDto(asignacion);
+        } catch (ErrorNegocio e) {
+            return null;
+        }
+    }
+
+    public void asignarPropiedadGarage(PropiedadGarageDTO dto) throws ErrorNegocio {
+        try {
+            propiedadGarageService.registrarPropiedad(dto);
+        } catch (ErrorNegocio e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ErrorNegocio("Error inesperado al asignar la propiedad: " + e.getMessage());
+        }
+    }
+
+    public void asignarVehiculoAGarageDTO(AsignacionVehiculoGarageDTO dto) throws ErrorNegocio {
+        try {
+            asignacionVehiculoGarageService.crearAsignacion(dto);
+        } catch (ErrorNegocio e) {
+            throw e;
+        }
+    }
+
+    public List<VehiculoDTO> listarVehiculosPorZona(int zonaId) {
+        List<VehiculoDTO> todosLosVehiculos = vehiculoService.listarTodos();
+        List<VehiculoDTO> resultado = new ArrayList<>();
+
+        for (VehiculoDTO v : todosLosVehiculos) {
+            var asignacion = asignacionVehiculoGarageService.buscarPorVehiculo(v.getId());
+            if (asignacion != null && asignacion.getGarage().getZona().getId() == zonaId) {
+                resultado.add(v);
+            }
+        }
+        return resultado;
+    }
 
     public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
-
-        asignacionEmpleadoZonaService.crearAsignacion(dto);
+        try {
+            asignacionEmpleadoZonaService.asignarEmpleadoAZona(dto);
+        } catch (ErrorNegocio e) {
+            throw e;
+        }
     }
 
     public List<EmpleadoDTO> listarEmpleadosPorZona(int zonaId) {
-        // Buscamos las asignaciones de esa zona y mapeamos los empleados a DTO
-        return asignacionEmpleadoZonaService.listarTodas().stream()
-                .filter(a -> a.getZona().getId() == zonaId)
-                .map(a -> new EmpleadoDTO(
-                        a.getEmpleado().getId(),
-                        a.getEmpleado().getNombre(),
-                        a.getEmpleado().getDireccion(),
-                        a.getEmpleado().getTelefono(),
-                        a.getEmpleado().getNombreUsuario(),
-                        a.getEmpleado().getClave(),
-                        a.getEmpleado().getRol(),
-                        a.getEmpleado().getCodigo(),
-                        a.getEmpleado().getEspecialidad()
-                ))
-                .toList();
+        return asignacionEmpleadoZonaService.obtenerEmpleadosPorZona(zonaId);
     }
 
+    // --- Usuarios ---
+    public List<UsuarioDTO> listarTodosLosUsuarios() {
+        return usuarioService.listarTodos();
+    }
 
+    public void modificarUsuario(UsuarioDTO u) {
+        try {
+            usuarioService.actualizarUsuario(u);
+        } catch (ErrorNegocio e) {
+            System.out.println("Error al modificar usuario: " + e.getMessage());
+        }
+    }
+
+    public void eliminarUsuario(int id) {
+        try {
+            usuarioService.eliminarUsuario(id);
+        } catch (ErrorNegocio e) {
+            System.out.println("Error al eliminar usuario: " + e.getMessage());
+        }
+    }
+
+    public void registrarUsuario(UsuarioDTO usuario) throws ErrorNegocio {
+        if (usuario instanceof SocioDTO socioDTO) {
+            socioService.registrarSocio(socioDTO);
+        } else if (usuario instanceof EmpleadoDTO empleadoDTO) {
+            empleadoService.registrarEmpleado(empleadoDTO);
+        } else if (usuario instanceof AdministradorDTO administradorDTO) {
+            administradorservice.registrarAdministrador(administradorDTO);
+        } else {
+            throw new ErrorNegocio("Tipo de usuario no soportado: " + usuario.getClass().getSimpleName());
+        }
+    }
 }
