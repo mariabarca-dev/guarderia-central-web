@@ -39,15 +39,7 @@ public class PropiedadGarageService {
     this.asignacionService = new AsignacionVehiculoGarageService();
 }
 
-    /**
-     * Registra la propiedad de un garaje por parte de un socio.
-     *
-     * @param socio El socio propietario.
-     * @param garage El garaje adquirido.
-     * @param fechaCompra La fecha en que el socio compró el garaje.
-     * @throws ErrorNegocio Si la fecha de compra es anterior a la fecha de
-     * ingreso del socio.
-     */
+
     public void registrarPropiedad(PropiedadGarageDTO dto) throws ErrorNegocio {
         if (dto == null) {
             throw new ErrorNegocio("Error: Datos del DTO incompletos.");

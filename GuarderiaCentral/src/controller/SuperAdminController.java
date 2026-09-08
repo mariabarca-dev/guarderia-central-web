@@ -98,7 +98,11 @@ public class SuperAdminController implements Controlador {
     }
 
     public void actualizarSocio(SocioDTO dto) throws RegistroNoEncontradoException {
-        socioService.actualizarSocio(dto);
+        try {
+            socioService.actualizarSocio(dto);
+        } catch (ErrorNegocio e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void eliminarSocio(int id) throws RegistroNoEncontradoException {

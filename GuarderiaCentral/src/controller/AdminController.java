@@ -30,6 +30,7 @@ public class AdminController {
     public AdminController(Usuario usuario) {
     }
 
+    /*
     // --- Socios ---
     public List<SocioDTO> listarTodosLosSocios() {
         return socioService.listarTodos();
@@ -44,7 +45,9 @@ public class AdminController {
             return null;
         }
     }
+    */
 
+/////
     // --- Empleados ---
     public List<EmpleadoDTO> listarTodosLosEmpleados() {
         return empleadoService.listarTodos();
@@ -300,6 +303,9 @@ public GarageDTO buscarGaragePorId(int id) {
         }
     }
 
+
+
+    ////este
     public void asignarPropiedadGarage(PropiedadGarageDTO dto) throws ErrorNegocio {
         try {
             // Delegamos al servicio
@@ -313,12 +319,15 @@ public GarageDTO buscarGaragePorId(int id) {
         }
     }
 
+    ///
     public void asignarVehiculoAGarageDTO(AsignacionVehiculoGarageDTO dto) throws ErrorNegocio {
 
         // Delegamos al servicio la lógica completa (validaciones, fechas, capacidad, etc.)
         asignacionVehiculoGarageService.crearAsignacion(dto);
 
     }
+
+    ///
 /*
     public List<VehiculoDTO> listarVehiculosPorZona(int zonaId) {
         // 1. Obtenemos todos los vehículos
