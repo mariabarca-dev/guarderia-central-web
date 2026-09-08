@@ -6,12 +6,6 @@ import dto.AdministradorDTO;
 
 public class AdministradorMapper {
 
-    /**
-     * Convierte un AdministradorDTO a un modelo Administrador.
-     * Asume que el ID ya ha sido asignado al DTO por la capa de Servicio.
-     * @param dto El objeto AdministradorDTO origen.
-     * @return Un nuevo objeto Administrador con los datos del DTO.
-     */
     public static Administrador toModel(AdministradorDTO dto) { // <--- Firma simplificada (sin el int id externo)
         if (dto == null) return null;
 
@@ -27,8 +21,7 @@ public class AdministradorMapper {
     }
 
     /**
-     * Versión sobrecargada para retrocompatibilidad o casos excepcionales.
-     * @deprecated Se prefiere usar toModel(AdministradorDTO).
+     * @deprecated Se recomienda asignar el ID al DTO y utilizar {@link #toModel(AdministradorDTO)}.
      */
     @Deprecated
     public static Administrador toModel(AdministradorDTO dto, int id) {
@@ -45,11 +38,6 @@ public class AdministradorMapper {
         );
     }
 
-    /**
-     * Convierte un modelo Administrador a un AdministradorDTO.
-     * @param model El objeto Administrador modelo origen.
-     * @return Un nuevo AdministradorDTO con los datos del modelo.
-     */
     public static AdministradorDTO toDto(Administrador model) {
         if (model == null) return null;
 

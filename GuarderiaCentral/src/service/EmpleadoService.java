@@ -1,5 +1,6 @@
 package service;
 
+import exceptions.CodigoEmpleadoDuplicadoException;
 import model.Empleado;
 import dto.EmpleadoDTO;
 import mapper.EmpleadoMapper;
@@ -42,7 +43,7 @@ public class EmpleadoService {
         // Regla de Negocio: Validación de Código único
         // Se asume que el DAO implementa este método para buscar en la base de datos/archivo.
         if (empleadoDAO.buscarPorCodigo(dto.getCodigo()) != null) {
-            throw new ErrorNegocio("Error: Ya existe un empleado registrado con el código: " + dto.getCodigo());
+            throw new CodigoEmpleadoDuplicadoException("Error: Ya existe un empleado registrado con el código: " + dto.getCodigo());
         }
 
         // Generar ID único para la nueva entidad.
