@@ -26,7 +26,8 @@ public class EmpleadoController {
         }
         // Inicializamos los servicios necesarios
         this.asignacionService = new AsignacionEmpleadoZonaService();
-        this.vehiculoService = new VehiculoService(); 
+        this.vehiculoService = new VehiculoService();
+        this.empleadoService = new EmpleadoService();
     }
 
     /**
