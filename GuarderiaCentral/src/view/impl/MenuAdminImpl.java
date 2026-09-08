@@ -275,7 +275,12 @@ public class MenuAdminImpl extends VistaImpl {
     private void ejecutarAsignacionVehiculo() throws ErrorNegocio {
         System.out.println("Operación: Ocupación de Garaje");
 
-        int vehiculoId = leerNumeroPositivo("ID del Vehículo");
+        int vehiculoId = leerNumeroPositivo("ID del Vehículo (0 para cancelar)");
+
+        if (vehiculoId == 0){
+            System.out.println("Operacion cancelada.");
+            return;
+        }
         VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(vehiculoId);
         if (vehiculo == null) {
             System.out.println("Error: no existe un vehículo con ese ID.");
@@ -286,7 +291,13 @@ public class MenuAdminImpl extends VistaImpl {
         boolean garageValido = false;
 
         do {
-            int garajeId = leerNumeroPositivo("ID del Garaje a ocupar");
+            int garajeId = leerNumeroPositivo("ID del Garaje a ocupar (0 para cancelar)");
+
+            if (garajeId == 0){
+                System.out.println("Operacion cancelada.");
+                return;
+            }
+
             garage = adminController.buscarGaragePorId(garajeId);
 
             if (garage == null) {
