@@ -1,5 +1,6 @@
 package service;
 
+import exceptions.MatriculaDuplicadaException;
 import model.Vehiculo;
 import model.TipoVehiculo;
 import dto.VehiculoDTO;
@@ -18,7 +19,7 @@ import util.IdGenerator;
  */
 public class VehiculoService {
     
-    private VehiculoDAO vehiculoDAO;
+    private final VehiculoDAO vehiculoDAO;
 
     public VehiculoService() {
         this.vehiculoDAO = new VehiculoDAOImpl();
@@ -37,7 +38,7 @@ public class VehiculoService {
         
         // 1. Validación: Matrícula única
         if (vehiculoDAO.buscarPorMatricula(dto.getMatricula()) != null) {
-            throw new ErrorNegocio("Error: Ya existe un vehículo con matrícula: " + dto.getMatricula());
+            throw new MatriculaDuplicadaException("Error: Ya existe un vehículo con matrícula: " + dto.getMatricula());
         }
         
         // 2. Generar ID para la nueva entidad

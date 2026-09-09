@@ -1,23 +1,17 @@
 package view.impl;
 
 import controller.AdminController;
+import controller.SocioController;
+import controller.VehiculoController;
+import model.Usuario;
 import dto.*;
 
 // 🔹 Importaciones de excepciones necesarias [cite: 2]
-import exceptions.CodigoEmpleadoDuplicadoException;
 import exceptions.DniDuplicadoException;
 import exceptions.ErrorNegocio;
 import exceptions.GarageYaOcupadoException;
 import exceptions.GarageYaVendidoException;
-import exceptions.MatriculaDuplicadaException;
-import exceptions.RegistroNoEncontradoException;
-import exceptions.ZonaSinCapacidadException;
-// 🔹 Importaciones de Mappers necesarios para la conversión 
-import mapper.EmpleadoMapper;
-import mapper.GarageMapper;
-import mapper.SocioMapper;
-import mapper.VehiculoMapper;
-import mapper.ZonaMapper;
+// 🔹 Importaciones de Mappers necesarios para la conversión
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -25,12 +19,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-// 🔹 Modelos usados solo LOCALMENTE en la vista para interacción 
-import model.Administrador;
-import model.Empleado;
-import model.Rol;
-import model.TipoVehiculo;
-import service.ZonaService;
+// 🔹 Modelos usados solo LOCALMENTE en la vista para interacción
+import model.*;
 
 /**
  * Menú de administración central. Esta clase implementa la vista y gestiona la
@@ -56,17 +46,22 @@ public class MenuAdminImpl extends VistaImpl {
     private static final int LIMITE_CAPACIDAD2 = 15;
 
     private final AdminController adminController;
+    private final VehiculoController vehiculoController;
+    private final SocioController socioController;
+
     private final Scanner scanner = new Scanner(System.in);
 
-    public MenuAdminImpl(AdminController adminController) {
+    public MenuAdminImpl(AdminController adminController, Usuario usuriousLogeado) {
         this.adminController = adminController;
+        this.vehiculoController=new VehiculoController(usuriousLogeado);
+        this.socioController = new SocioController(usuriousLogeado);
     }
 
     @Override
     public void mostrar() {
         boolean salir = false;
         while (!salir) {
-            
+
             System.out.println("Panel de Administración Central");
             System.out.println("1. ABM Entidades (Socios, Empleados, Vehículos, Garajes, Zonas)");
             System.out.println("2. Registrar Venta de Garaje a Socio");
@@ -78,7 +73,7 @@ public class MenuAdminImpl extends VistaImpl {
             int opcion = leerEntero("Seleccione una opción");
             switch (opcion) {
                 case 1: {
-                    
+
                     try {
                         mostrarSubmenuCRUD();
                     } catch (ErrorNegocio ex) {
@@ -88,7 +83,7 @@ public class MenuAdminImpl extends VistaImpl {
                 break;
                 case 2:
                 {
-                    
+
                     try {
                         ejecutarVentaGarage();
                     } catch (ErrorNegocio ex) {
@@ -99,7 +94,7 @@ public class MenuAdminImpl extends VistaImpl {
 
                 case 3:
                 {
-                    
+
                     try {
                         ejecutarAsignacionVehiculo();
                     } catch (ErrorNegocio ex) {
@@ -109,7 +104,7 @@ public class MenuAdminImpl extends VistaImpl {
                     break;
 
                 case 4:
-                    
+
                     try {
                         ejecutarAsignacionEmpleado();
                     } catch (ErrorNegocio ex) {
@@ -117,11 +112,11 @@ public class MenuAdminImpl extends VistaImpl {
                     }
                     break;
                 case 5:
-                    
+
                     mostrarSubmenuConsultas();
                     break;
                 case 6:
-                    
+
                     System.out.println("Sesión de administrador finalizada.");
                     salir = true;
                     break;
@@ -226,7 +221,8 @@ public class MenuAdminImpl extends VistaImpl {
         System.out.println("Operación: Propiedad de Garaje");
 
         int socioId = leerNumeroPositivo("ID del Socio comprador");
-        SocioDTO socio = adminController.buscarSocioPorId(socioId); // Verifica que este método exista en el controller
+          SocioDTO socio = socioController.buscarSocioPorId(socioId);
+        //SocioDTO socio = adminController.buscarSocioPorId(socioId); // Verifica que este método exista en el controller
         if (socio == null) {
             System.out.println("Error: no existe un socio con ese ID.");
             return;
@@ -276,7 +272,8 @@ public class MenuAdminImpl extends VistaImpl {
         System.out.println("Operación: Ocupación de Garaje");
 
         int vehiculoId = leerNumeroPositivo("ID del Vehículo");
-        VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(vehiculoId);
+        VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(vehiculoId);
+        //VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(vehiculoId);
         if (vehiculo == null) {
             System.out.println("Error: no existe un vehículo con ese ID.");
             return;
@@ -305,7 +302,7 @@ public class MenuAdminImpl extends VistaImpl {
             }
         } while (!garageValido);
 
-     
+
             LocalDate fechaAsignacion = leerFechaValida("Fecha de Asignación (YYYY-MM-DD)", false);
 
             // 🔹 Crear el DTO
@@ -317,7 +314,7 @@ public class MenuAdminImpl extends VistaImpl {
             System.out.println("Vehículo asignado correctamente al garaje.");
 
     }
-    
+
 
     private void ejecutarAsignacionEmpleado() throws ErrorNegocio {
         System.out.println("Operación: Carga de Personal en Zona");
@@ -339,7 +336,9 @@ public class MenuAdminImpl extends VistaImpl {
         int vehiculosACargo = leerNumeroPositivo("Cantidad de vehículos bajo su cargo");
 
         // 🔹 Validación: usamos el DTO de zona para obtener la capacidad o consultar al controller
-        List<VehiculoDTO> vehiculosEnZona = adminController.listarVehiculosPorZona(zonaId);
+
+        List<VehiculoDTO> vehiculosEnZona = vehiculoController.listarVehiculosPorZona(zonaId);
+        //List<VehiculoDTO> vehiculosEnZona = adminController.listarVehiculosPorZona(zonaId);
         int cantidadReal = (vehiculosEnZona != null) ? vehiculosEnZona.size() : 0;
 
         if (cantidadReal < vehiculosACargo) {
@@ -362,7 +361,7 @@ public class MenuAdminImpl extends VistaImpl {
         // 🔹 Creamos el DTO de asignación enviando los objetos DTO correspondientes
         AsignacionEmpleadoZonaDTO asignacion = new AsignacionEmpleadoZonaDTO(empleado, zona, vehiculosACargo);
 
-        // Si tu lógica requiere los IDs de los vehículos, asegúrate de que el DTO 
+        // Si tu lógica requiere los IDs de los vehículos, asegúrate de que el DTO
         // también los contenga o agrégalos mediante un setter:
         // asignacion.setIdsVehiculos(idsSeleccionados);
         adminController.asignarEmpleadoAZona(asignacion);
@@ -383,7 +382,8 @@ public class MenuAdminImpl extends VistaImpl {
                 break;
             case 2:
                 int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
-                adminController.listarVehiculosPorZona(idZ);
+                 vehiculoController.listarVehiculosPorZona(idZ);
+               // adminController.listarVehiculosPorZona(idZ);
                 break;
             case 3:
                 int idZonaEmp = leerNumeroPositivo("Ingrese ID de la Zona");
@@ -681,7 +681,9 @@ public class MenuAdminImpl extends VistaImpl {
 
         // --- Selección de socio propietario ---
         System.out.println("--- Lista de Socios ---");
-        List<SocioDTO> socios = adminController.listarTodosLosSocios();
+
+        List<SocioDTO> socios  = socioController.listarTodosLosSocios();
+        //List<SocioDTO> socios = adminController.listarTodosLosSocios();
         for (SocioDTO s : socios) {
             System.out.println("ID: " + s.getId() + " | Nombre: " + s.getNombre() + " | DNI: " + s.getDni());
         }
@@ -793,7 +795,8 @@ public class MenuAdminImpl extends VistaImpl {
             case 'd':
                 // Selección de socio propietario
                 System.out.println("--- Lista de Socios ---");
-                List<SocioDTO> socios = adminController.listarTodosLosSocios();
+                List<SocioDTO> socios =  socioController.listarTodosLosSocios();
+                //List<SocioDTO> socios = adminController.listarTodosLosSocios();
                 for (SocioDTO s : socios) {
                     System.out.println("ID: " + s.getId() + " | Nombre: " + s.getNombre() + " | DNI: " + s.getDni());
                 }
@@ -1073,7 +1076,8 @@ public class MenuAdminImpl extends VistaImpl {
     private void altaVehiculo() {
         // --- 1. Selección de socio propietario ---
         System.out.println("--- Lista de Socios ---");
-        List<SocioDTO> socios = adminController.listarTodosLosSocios();
+        List<SocioDTO> socios =  socioController.listarTodosLosSocios();
+        //List<SocioDTO> socios = adminController.listarTodosLosSocios();
         for (SocioDTO s : socios) {
             System.out.println("ID: " + s.getId() + " | Nombre: " + s.getNombre() + " | DNI: " + s.getDni());
         }
@@ -1104,7 +1108,9 @@ public class MenuAdminImpl extends VistaImpl {
                 System.out.println("Error: matrícula inválida (máx 7 caracteres alfanuméricos).");
             } else {
                 // Validar que no esté duplicada en la lista de vehículos
-                List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
+
+                List<VehiculoDTO> vehiculos  =  vehiculoController.listarTodosLosVehiculos();
+                //List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
                 boolean duplicada = false;
                 for (VehiculoDTO v : vehiculos) {
                     if (v.getMatricula().equalsIgnoreCase(matricula)) {
@@ -1169,7 +1175,9 @@ public class MenuAdminImpl extends VistaImpl {
         );
 
         try {
-            adminController.registrarVehiculo(nuevoVehiculo);
+
+              vehiculoController.registrarVehiculo(nuevoVehiculo);
+            //adminController.registrarVehiculo(nuevoVehiculo);
             System.out.println("Vehículo registrado correctamente.");
         } catch (Exception e) {
             System.out.println("Error al registrar vehículo: " + e.getMessage());
@@ -1190,7 +1198,9 @@ public class MenuAdminImpl extends VistaImpl {
 
     private void modificarVehiculo(int idVehiculo) throws ErrorNegocio {
         System.out.println("--- Lista de Vehículos ---");
-        List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
+
+        List<VehiculoDTO> vehiculos = vehiculoController.listarTodosLosVehiculos();
+        //List<VehiculoDTO> vehiculos = adminController.listarTodosLosVehiculos();
         for (VehiculoDTO v : vehiculos) {
             System.out.println("ID: " + v.getId() + " | Nombre: " + v.getNombre()
                     + " | Matrícula: " + v.getMatricula()
@@ -1229,7 +1239,8 @@ public class MenuAdminImpl extends VistaImpl {
 
             case 'c':
                 System.out.println("--- Lista de Socios ---");
-                List<SocioDTO> socios = adminController.listarTodosLosSocios();
+                List<SocioDTO> socios = socioController.listarTodosLosSocios();
+                //List<SocioDTO> socios = adminController.listarTodosLosSocios();
                 for (SocioDTO s : socios) {
                     System.out.println("ID: " + s.getId() + " | Nombre: " + s.getNombre());
                 }
@@ -1294,20 +1305,27 @@ public class MenuAdminImpl extends VistaImpl {
         }
 
         // 🔹 Persistimos el DTO actualizado
-        adminController.modificarVehiculo(vehiculo);
+
+
+         vehiculoController.modificarVehiculo(vehiculo);
+        //adminController.modificarVehiculo(vehiculo);
         System.out.println("Vehículo actualizado correctamente.");
 
     }
 
-    private void eliminarVehiculo() {
+    private void eliminarVehiculo() throws ErrorNegocio {
         System.out.println("--- Lista de Vehículos ---");
         // Se mantiene la llamada para que el usuario visualice la lista actual
-        adminController.listarTodosLosVehiculos();
+
+        vehiculoController.listarTodosLosVehiculos();
+        //adminController.listarTodosLosVehiculos();
 
         int idVehiculo = leerNumeroPositivo("Ingrese el ID del vehículo a eliminar");
 
         // Validamos la existencia utilizando el controlador antes de proceder
-        VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(idVehiculo);
+
+        VehiculoDTO vehiculo   = vehiculoController.buscarVehiculoPorId(idVehiculo);
+         //VehiculoDTO vehiculo = adminController.buscarVehiculoPorId(idVehiculo);
 
         if (vehiculo == null) {
             System.out.println("No se encontró ningún vehículo con ese ID.");
@@ -1315,7 +1333,9 @@ public class MenuAdminImpl extends VistaImpl {
         }
 
         // Solicitamos al controlador la eliminación mediante el ID
-        adminController.eliminarVehiculo(idVehiculo);
+
+        vehiculoController.eliminarVehiculo(idVehiculo);
+        //adminController.eliminarVehiculo(idVehiculo);
 
         System.out.println("Vehículo eliminado correctamente.");
     }
