@@ -10,6 +10,8 @@ import java.util.List;
 import model.AsignacionVehiculoGarage;
 import model.Garage;
 
+//prueba conexion fran
+
 public class AdminController {
 
     private final SocioService socioService = new SocioService();
