@@ -15,6 +15,17 @@ public class Empleado extends Usuario {
         this.especialidad = especialidad;
     }
 
+    //Constructor vacio
+    public Empleado() {
+    }
+
+    //Constructor sin id
+    public Empleado(String nombre, String direccion, String telefono, String nombreUsuario, String clave, Rol rol, String codigo, String especialidad) {
+        super(nombre, direccion, telefono, nombreUsuario, clave, rol);
+        this.codigo = codigo;
+        this.especialidad = especialidad;
+    }
+
     // Getters
     public String getCodigo() {
         return codigo;

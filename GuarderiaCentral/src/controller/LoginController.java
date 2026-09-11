@@ -14,6 +14,7 @@ import view.impl.MenuSuperAdminImpl; // <--- Import del menú SuperAdmin
 import dto.UsuarioDTO;
 import dto.EmpleadoDTO;
 import dto.SocioDTO;
+import exceptions.*;
 
 public class LoginController implements Controlador {
 
@@ -31,7 +32,13 @@ public class LoginController implements Controlador {
     @Override
     public void login(String nombreUsuario, String claveIngresada) {
         try {
-            // 1. Buscamos al usuario (autenticación) y obtenemos el DTO
+            // Validation básica de sintaxis/formato antes de ir al Service
+            if (nombreUsuario == null || nombreUsuario.isBlank() || claveIngresada == null || claveIngresada.isBlank()) {
+                System.out.println("Error: El nombre de usuario y la contraseña no pueden estar vacíos.");
+                return;
+            }
+
+            // 1. Buscamos al usuario (autenticación)
             UsuarioDTO usuarioDto = usuarioService.buscarPorNombreUsuario(nombreUsuario);
 
             if (usuarioDto == null || !usuarioDto.getClave().equals(claveIngresada)) {
@@ -39,10 +46,9 @@ public class LoginController implements Controlador {
                 return;
             }
 
-            // Convertimos el DTO a Modelo para usarlo en la lógica del controlador y RBAC
+            // Convertimos el DTO a Modelo
             Usuario usuarioModel = UsuarioMapper.toModel(usuarioDto);
-
-            System.out.println("Bienvenido, " + usuarioModel.getNombre());
+            System.out.println("\nBienvenido, " + usuarioModel.getNombre() + "!");
 
             // 2. Selección de flujo basada en ROL
             switch (usuarioModel.getRol()) {
@@ -79,9 +85,11 @@ public class LoginController implements Controlador {
 
         } catch (SecurityException e) {
             System.out.println("Acceso denegado: " + e.getMessage());
+        } catch (ErrorNegocio e) {
+            System.out.println("Error de autenticación: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Ocurrió un error al iniciar sesión: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("Ocurrió un error inesperado al iniciar sesión. Intente nuevamente.");
+            // Opcional: registrar en log en vez de e.printStackTrace() si no quieren ensuciar la consola de la app
         }
     }
 }

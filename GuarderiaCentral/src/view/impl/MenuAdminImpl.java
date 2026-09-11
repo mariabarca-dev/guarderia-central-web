@@ -1,17 +1,23 @@
 package view.impl;
 
 import controller.AdminController;
-import controller.SocioController;
-import controller.VehiculoController;
-import model.Usuario;
 import dto.*;
 
 // 🔹 Importaciones de excepciones necesarias [cite: 2]
+import exceptions.CodigoEmpleadoDuplicadoException;
 import exceptions.DniDuplicadoException;
 import exceptions.ErrorNegocio;
 import exceptions.GarageYaOcupadoException;
 import exceptions.GarageYaVendidoException;
-// 🔹 Importaciones de Mappers necesarios para la conversión
+import exceptions.MatriculaDuplicadaException;
+import exceptions.RegistroNoEncontradoException;
+import exceptions.ZonaSinCapacidadException;
+// 🔹 Importaciones de Mappers necesarios para la conversión 
+import mapper.EmpleadoMapper;
+import mapper.GarageMapper;
+import mapper.SocioMapper;
+import mapper.VehiculoMapper;
+import mapper.ZonaMapper;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -46,22 +52,17 @@ public class MenuAdminImpl extends VistaImpl {
     private static final int LIMITE_CAPACIDAD2 = 15;
 
     private final AdminController adminController;
-    private final VehiculoController vehiculoController;
-    private final SocioController socioController;
-
     private final Scanner scanner = new Scanner(System.in);
 
-    public MenuAdminImpl(AdminController adminController, Usuario usuriousLogeado) {
+    public MenuAdminImpl(AdminController adminController) {
         this.adminController = adminController;
-        this.vehiculoController=new VehiculoController(usuriousLogeado);
-        this.socioController = new SocioController(usuriousLogeado);
     }
 
     @Override
     public void mostrar() {
         boolean salir = false;
         while (!salir) {
-
+            
             System.out.println("Panel de Administración Central");
             System.out.println("1. ABM Entidades (Socios, Empleados, Vehículos, Garajes, Zonas)");
             System.out.println("2. Registrar Venta de Garaje a Socio");
@@ -73,7 +74,7 @@ public class MenuAdminImpl extends VistaImpl {
             int opcion = leerEntero("Seleccione una opción");
             switch (opcion) {
                 case 1: {
-
+                    
                     try {
                         mostrarSubmenuCRUD();
                     } catch (ErrorNegocio ex) {
@@ -221,8 +222,7 @@ public class MenuAdminImpl extends VistaImpl {
         System.out.println("Operación: Propiedad de Garaje");
 
         int socioId = leerNumeroPositivo("ID del Socio comprador");
-          SocioDTO socio = socioController.buscarSocioPorId(socioId);
-        //SocioDTO socio = adminController.buscarSocioPorId(socioId); // Verifica que este método exista en el controller
+        SocioDTO socio = adminController.buscarSocioPorId(socioId); // Verifica que este método exista en el controller
         if (socio == null) {
             System.out.println("Error: no existe un socio con ese ID.");
             return;
@@ -283,7 +283,13 @@ public class MenuAdminImpl extends VistaImpl {
         boolean garageValido = false;
 
         do {
-            int garajeId = leerNumeroPositivo("ID del Garaje a ocupar");
+            int garajeId = leerNumeroPositivo("ID del Garaje a ocupar (0 para cancelar)");
+
+            if (garajeId == 0){
+                System.out.println("Operacion cancelada.");
+                return;
+            }
+
             garage = adminController.buscarGaragePorId(garajeId);
 
             if (garage == null) {
@@ -365,6 +371,7 @@ public class MenuAdminImpl extends VistaImpl {
         // también los contenga o agrégalos mediante un setter:
         // asignacion.setIdsVehiculos(idsSeleccionados);
         adminController.asignarEmpleadoAZona(asignacion);
+
         System.out.println("Empleado asignado correctamente a la zona.");
     }
 
