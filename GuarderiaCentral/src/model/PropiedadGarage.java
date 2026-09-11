@@ -5,11 +5,23 @@ import java.time.LocalDate;
 
 public class PropiedadGarage {
     
-
+    private int id;
     private Socio socio;
     private Garage garage;
     private LocalDate fechaCompraGarage;
 
+
+    //constructor vacio
+    public PropiedadGarage() {
+    }
+    //constructor con ID
+    public PropiedadGarage(int id, Socio socio, Garage garage, LocalDate fechaCompraGarage) {
+        this.id = id;
+        this.socio = socio;
+        this.garage = garage;
+        this.fechaCompraGarage= fechaCompraGarage;
+    }
+    //constructor sin ID
     public PropiedadGarage(Socio socio, Garage garage, LocalDate fechaCompraGarage) {
         this.socio = socio;
         this.garage = garage;

@@ -3,7 +3,7 @@ package dao;
 import java.util.List;
 import model.Garage;
 
-public interface GarageDAO {
+public interface GarageDAO extends GenericDAO{
     
     void guardar(Garage garage);
     void actualizar(Garage garage);
@@ -13,4 +13,5 @@ public interface GarageDAO {
     List<Garage> listarTodos();
     Garage buscarPorId(int id);
     List<Garage> listarPorSocio(int socioId);
+    //se deberá agregar un método estáVendido para validar la fecha de compra (en caso que esté vendido)
 }

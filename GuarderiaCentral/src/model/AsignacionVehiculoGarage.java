@@ -6,10 +6,22 @@ import java.time.LocalDate;
 
 public class AsignacionVehiculoGarage {
 
+    private int id;
     private Vehiculo vehiculo;
     private Garage garage;
     private LocalDate fechaAsignacionGarage;
 
+    //constructor vacío
+    public AsignacionVehiculoGarage() {
+    }
+    //constructor con ID
+    public AsignacionVehiculoGarage(int id, Vehiculo vehiculo, Garage garage, LocalDate fechaAsignacionGarage) {
+        this.id = id;
+        this.vehiculo = vehiculo;
+        this.garage = garage;
+        this.fechaAsignacionGarage = fechaAsignacionGarage;
+    }
+    //constructor sin ID
     public AsignacionVehiculoGarage(Vehiculo vehiculo, Garage garage, LocalDate fechaAsignacionGarage) {
         this.vehiculo = vehiculo;
         this.garage = garage;

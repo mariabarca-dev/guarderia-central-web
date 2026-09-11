@@ -3,7 +3,7 @@ package dao;
 import java.util.List;
 import model.Zona;
 
-public interface ZonaDAO{
+public interface ZonaDAO extends GenericDAO<Zona, Integer>{
     void guardar(Zona zona);
     void actualizar(Zona zona);
     void eliminar(String letra);

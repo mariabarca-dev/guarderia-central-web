@@ -49,7 +49,12 @@ public class ZonaDTO {
     }
 
     public void setLetra(String letra) {
-        this.letra = letra;
+        if (letra != null) {
+            // Convierte a mayúsculas y quita espacios en blanco
+            this.letra = letra.trim().toUpperCase();
+        } else {
+            this.letra = null;
+        }
     }
 
     // <--- CORREGIDO: Setter sin acento

@@ -12,8 +12,6 @@ import model.AsignacionVehiculoGarage;
 import model.Empleado;
 import model.Garage;
 
-//tercera prueba de conexion
-
 public class AdminController {
 
     private final SocioService socioService = new SocioService();
@@ -47,7 +45,6 @@ public class AdminController {
     }
     */
 
-/////
     // --- Empleados ---
     public List<EmpleadoDTO> listarTodosLosEmpleados() {
         return empleadoService.listarTodos();
@@ -303,9 +300,6 @@ public GarageDTO buscarGaragePorId(int id) {
         }
     }
 
-
-
-    ////este
     public void asignarPropiedadGarage(PropiedadGarageDTO dto) throws ErrorNegocio {
         try {
             // Delegamos al servicio
@@ -319,7 +313,6 @@ public GarageDTO buscarGaragePorId(int id) {
         }
     }
 
-    ///
     public void asignarVehiculoAGarageDTO(AsignacionVehiculoGarageDTO dto) throws ErrorNegocio {
 
         // Delegamos al servicio la lógica completa (validaciones, fechas, capacidad, etc.)

@@ -8,14 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ZonaDAOImpl implements ZonaDAO {
-    
+
     private ArchivoZona bd;
 
     public ZonaDAOImpl() {
         this.bd = new ArchivoZona();
-        this.bd.inicializarBD(); // Se asegura de que SOLO su entorno esté listo
+        this.bd.inicializarBD();
     }
-    
+
     private final String RUTA_ARCHIVO = "zona.txt";
 
     @Override
@@ -39,7 +39,17 @@ public class ZonaDAOImpl implements ZonaDAO {
         }
         reescribirArchivo(lista);
     }
+//dani
+    // Cumple con GenericDAO<Zona, Integer>
+    @Override
+    public void eliminar(Integer id) {
+        if (id == null) return;
+        List<Zona> lista = listarTodos();
+        lista.removeIf(z -> z.getId() == id);
+        reescribirArchivo(lista);
+    }
 
+    // Mantiene tu método original por si lo usas con la letra de la zona
     @Override
     public void eliminar(String letra) {
         List<Zona> lista = listarTodos();
@@ -49,15 +59,21 @@ public class ZonaDAOImpl implements ZonaDAO {
 
     @Override
     public Zona buscarPorLetra(String letra) {
+        if (letra == null) return null;
         return listarTodos().stream()
-                .filter(z -> z.getLetra().equals(letra))
+                .filter(z -> z.getLetra() != null && z.getLetra().equalsIgnoreCase(letra.trim()))
                 .findFirst()
                 .orElse(null);
     }
-    
+
+    // Cumple con GenericDAO<Zona, Integer> (cambiado 'int' por 'Integer')
     @Override
-    public Zona buscarPorId(int id){
-        return listarTodos().stream().filter(z -> z.getId() == id).findFirst().orElse(null);
+    public Zona buscarPorId(Integer id) {
+        if (id == null) return null;
+        return listarTodos().stream()
+                .filter(z -> z.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -69,13 +85,17 @@ public class ZonaDAOImpl implements ZonaDAO {
         try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                // Asumiendo que Zona.fromString parsea correctamente la línea
                 lista.add(Zona.fromString(linea));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return lista;
+    }
+
+    @Override
+    public Zona buscarPorId(int id) {
+        return null;
     }
 
     private void reescribirArchivo(List<Zona> lista) {
