@@ -7,7 +7,9 @@ import dto.VehiculoDTO;
 import model.Usuario; // <- Importante
 import java.util.List;
 
-public class MenuEmpleadoImpl extends VistaImpl {
+import view.MenuEmpleado;
+
+public class MenuEmpleadoImpl extends VistaImpl implements MenuEmpleado {
     private final EmpleadoController empleadoController;
     private final EmpleadoDTO empleadoLogueado;
     private final Usuario usuarioSesion; // <- Guardamos la sesión aquí

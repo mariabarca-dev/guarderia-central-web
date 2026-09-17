@@ -45,12 +45,14 @@ public class GarageController {
             throw new ErrorNegocio("Error de formato: La letra o código de la zona no es válido (debe tener entre 1 y 3 letras).");
         }
 
-        if (dto.getSocioPropietario() != null && !dto.getSocioPropietario().trim().isEmpty()) {
+        if (dto.getSocioPropietario() != null && !dto.getSocioPropietario().trim().isEmpty() && !dto.getSocioPropietario().equalsIgnoreCase("Libre")) {
             String dni = dto.getSocioPropietario().trim();
             if (!PATTERN_DNI.matcher(dni).matches()) {
                 throw new ErrorNegocio("Error de formato: El DNI del socio propietario no es válido (7 a 10 dígitos numéricos).");
             }
             dto.setSocioPropietario(dni);
+        } else {
+            dto.setSocioPropietario(null);
         }
 
         dto.setZona(dto.getZona().trim().toUpperCase());
@@ -120,12 +122,14 @@ public class GarageController {
             throw new ErrorNegocio("Error de formato: La letra de la zona no es válida.");
         }
 
-        if (dto.getSocioPropietario() != null && !dto.getSocioPropietario().trim().isEmpty()) {
+        if (dto.getSocioPropietario() != null && !dto.getSocioPropietario().trim().isEmpty() && !dto.getSocioPropietario().equalsIgnoreCase("Libre")) {
             String dni = dto.getSocioPropietario().trim();
             if (!PATTERN_DNI.matcher(dni).matches()) {
                 throw new ErrorNegocio("Error de formato: El DNI del socio propietario no es válido.");
             }
             dto.setSocioPropietario(dni);
+        } else {
+            dto.setSocioPropietario(null);
         }
 
         if (dto.getZona() != null) {

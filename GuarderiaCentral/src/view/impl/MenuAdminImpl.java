@@ -1,5 +1,6 @@
 package view.impl;
 
+
 import controller.AdminController;
 import controller.AsignacionEmpleadoZonaController;
 import controller.AsignacionVehiculoGarageController;
@@ -21,7 +22,9 @@ import java.util.Scanner;
 import model.Rol;
 import model.Usuario;
 
-public class MenuAdminImpl extends VistaImpl {
+import view.MenuAdmin;
+
+public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
 
     private static final int LIMITE_DNI = 8;
     private static final int LIMITE_TELEFONO = 10;

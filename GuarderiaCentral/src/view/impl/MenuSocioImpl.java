@@ -6,8 +6,10 @@ import dto.VehiculoDTO;
 import dto.GarageDTO;
 import model.Usuario; // <- Importante
 import java.util.List;
+import view.MenuSocio;
 
-public class MenuSocioImpl extends VistaImpl {
+
+public class MenuSocioImpl extends VistaImpl implements MenuSocio {
     private final SocioController socioController;
     private final SocioDTO socioLogueado;
     private final Usuario usuarioSesion; // <- Guardamos la sesión
