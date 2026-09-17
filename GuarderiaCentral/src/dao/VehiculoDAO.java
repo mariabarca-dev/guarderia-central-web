@@ -1,9 +1,11 @@
 package dao;
 
 import java.util.List;
+
+import model.Administrador;
 import model.Vehiculo;
 
-public interface VehiculoDAO extends GenericDAO{
+public interface VehiculoDAO extends GenericDAO<Vehiculo, Integer> {
     void guardar(Vehiculo vehiculo);
     void actualizar(Vehiculo vehiculo);
     void eliminar(String matricula);

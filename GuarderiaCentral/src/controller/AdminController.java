@@ -26,7 +26,7 @@ public class AdminController {
     public AdminController(Usuario usuario) {
     }
 
-    /*
+
     public String registrarAdministradorDesdeVista(String nombre, String direccion, String telefono,
                                                    String nombreUsuario, String clave, String rolStr) {
 
@@ -55,7 +55,7 @@ public class AdminController {
             return "Error de negocio: " + e.getMessage();
         }
     }
-
+/*
     // --- Socios ---
     public List<SocioDTO> listarTodosLosSocios() {
         return socioService.listarTodos();
@@ -69,7 +69,7 @@ public class AdminController {
         }
     }
     */
-
+/*
     // --- Empleados ---
     public List<EmpleadoDTO> listarTodosLosEmpleados() {
         return empleadoService.listarTodos();
@@ -78,7 +78,7 @@ public class AdminController {
     public EmpleadoDTO buscarEmpleadoPorId(int id) {
         return empleadoService.buscarEmpleadoPorId(id);
     }
-
+*/
 /*
     // --- Vehículos ---
     public List<VehiculoDTO> listarTodosLosVehiculos() {
@@ -138,6 +138,7 @@ public class AdminController {
 
     // --- Garajes ---
 */
+    /*
 // --- Garajes ---
     public List<GarageDTO> listarTodosLosGarages() {
         return garageService.listarTodos();
@@ -302,7 +303,7 @@ public class AdminController {
     public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
 */
     /////DANIIIIIII
-
+/*
 public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
         try {
             asignacionEmpleadoZonaService.asignarEmpleadoAZona(dto);
@@ -314,6 +315,8 @@ public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNego
     public List<EmpleadoDTO> listarEmpleadosPorZona(int zonaId) {
         return asignacionEmpleadoZonaService.obtenerEmpleadosPorZona(zonaId);
     }
+
+    */
 
     // --- Usuarios ---
     public List<UsuarioDTO> listarTodosLosUsuarios() {
