@@ -32,11 +32,12 @@ public class InicializarDataBase {
             if (!existeSuperAdmin) {
                 adminService.registrarAdministrador(new AdministradorDTO(
                         1,
-                        "Super Admin Default",
+                        "Super Admin",
+                        "Default",            // <--- Apellido
                         "Av. Corrientes 1000",
                         "1100000000",
-                        "superadmin",   // Usuario para login
-                        "super123",     // Contraseña para login
+                        "superadmin",         // Usuario para login
+                        "super123",           // Contraseña para login
                         Rol.SUPERADMINISTRADOR
                 ));
             }
@@ -47,7 +48,14 @@ public class InicializarDataBase {
 
             if (!existeAdmin) {
                 adminService.registrarAdministrador(new AdministradorDTO(
-                        100, "Admin Default", "Calle Falsa 123", "12345678", "admin", "admin123", Rol.ADMINISTRADOR
+                        100,
+                        "Admin",
+                        "Default",            // <--- Apellido
+                        "Calle Falsa 123",
+                        "12345678",
+                        "admin",
+                        "admin123",
+                        Rol.ADMINISTRADOR
                 ));
             }
 
@@ -57,7 +65,16 @@ public class InicializarDataBase {
 
             if (empleadoService.listarTodos().isEmpty() && !existeEmpleado) {
                 empleadoService.registrarEmpleado(new EmpleadoDTO(
-                        300, "Empleado Default", "Av. Principal 456", "87654321", "EMP001", "empleado123", Rol.EMPLEADO, "EMP-01", "Cuidacoche"
+                        300,
+                        "Empleado",
+                        "Default",            // <--- Apellido
+                        "Av. Principal 456",
+                        "87654321",
+                        "EMP001",
+                        "empleado123",
+                        Rol.EMPLEADO,
+                        "EMP-01",
+                        "Cuidacoche"
                 ));
             }
 
@@ -67,7 +84,16 @@ public class InicializarDataBase {
 
             if (socioService.listarTodos().isEmpty() && !existeSocio) {
                 socioService.registrarSocio(new SocioDTO(
-                        600, "Socio Default", "Calle Real 789", "11223344", "socio", "socio123", Rol.SOCIO, "46598674", LocalDate.now()
+                        600,
+                        "Socio",
+                        "Default",            // <--- Apellido
+                        "Calle Real 789",
+                        "11223344",
+                        "socio",
+                        "socio123",
+                        Rol.SOCIO,
+                        "46598674",
+                        LocalDate.now()
                 ));
             }
         } catch (ErrorNegocio e) {
