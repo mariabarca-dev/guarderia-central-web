@@ -1,17 +1,31 @@
 package view.impl;
 
-import controller.SuperAdminController;
+import controller.AdminController;
+import controller.EmpleadoController;
+import controller.SocioController;
 import dto.AdministradorDTO;
 import dto.EmpleadoDTO;
 import dto.SocioDTO;
+import dto.UsuarioDTO;
 import model.Rol;
+import model.Usuario;
+import view.MenuSysAdmin;
 
-public class MenuSuperAdminImpl extends VistaImpl {
+public class MenuSysAdminImpl extends VistaImpl implements MenuSysAdmin {
 
-    private final SuperAdminController controller;
+    private final AdminController adminController;
+    private final EmpleadoController empleadoController;
+    private final SocioController socioController;
+    private final Usuario usuarioSesion;
 
-    public MenuSuperAdminImpl(SuperAdminController controller) {
-        this.controller = controller;
+    public MenuSysAdminImpl(AdminController adminController,
+                            EmpleadoController empleadoController,
+                            SocioController socioController,
+                            Usuario usuarioSesion) {
+        this.adminController = adminController;
+        this.empleadoController = empleadoController;
+        this.socioController = socioController;
+        this.usuarioSesion = usuarioSesion;
     }
 
     @Override
@@ -64,17 +78,23 @@ public class MenuSuperAdminImpl extends VistaImpl {
         try {
             switch (op) {
                 case 1:
-                    for (AdministradorDTO a : controller.listarAdministradores()) {
-                        System.out.println("ID: " + a.getId() + " | Usuario: " + a.getNombreUsuario() + " | Nombre: " + a.getNombre());
+                    for (UsuarioDTO u : adminController.listarTodosLosUsuarios(usuarioSesion)) {
+                        if (u instanceof AdministradorDTO a) {
+                            System.out.println("ID: " + a.getId() + " | Usuario: " + a.getNombreUsuario() + " | Nombre: " + a.getNombre());
+                        }
                     }
                     break;
                 case 2:
                     AdministradorDTO dtoReg = new AdministradorDTO();
                     dtoReg.setNombre(leerTexto("Nombre"));
+                    dtoReg.setApellido(leerTexto("Apellido"));
+                    dtoReg.setDireccion(leerTexto("Dirección"));
+                    dtoReg.setTelefono(leerTexto("Teléfono"));
                     dtoReg.setNombreUsuario(leerTexto("Nombre de usuario"));
                     dtoReg.setClave(leerTexto("Contraseña"));
                     dtoReg.setRol(Rol.ADMINISTRADOR);
-                    controller.registrarAdministrador(dtoReg);
+
+                    adminController.registrarAdministrador(usuarioSesion, dtoReg);
                     System.out.println("Administrador registrado con éxito.");
                     break;
                 case 3:
@@ -82,15 +102,19 @@ public class MenuSuperAdminImpl extends VistaImpl {
                     AdministradorDTO dtoMod = new AdministradorDTO();
                     dtoMod.setId(idMod);
                     dtoMod.setNombre(leerTexto("Nuevo Nombre"));
+                    dtoMod.setApellido(leerTexto("Nuevo Apellido"));
+                    dtoMod.setDireccion(leerTexto("Nueva Dirección"));
+                    dtoMod.setTelefono(leerTexto("Nuevo Teléfono"));
                     dtoMod.setNombreUsuario(leerTexto("Nuevo Usuario"));
                     dtoMod.setClave(leerTexto("Nueva Contraseña"));
                     dtoMod.setRol(Rol.ADMINISTRADOR);
-                    controller.actualizarAdministrador(dtoMod);
+
+                    adminController.modificarUsuario(usuarioSesion, dtoMod);
                     System.out.println("Administrador modificado con éxito.");
                     break;
                 case 4:
                     int idElim = leerEntero("ID del administrador a eliminar");
-                    controller.eliminarAdministrador(idElim);
+                    adminController.eliminarUsuario(usuarioSesion, idElim);
                     System.out.println("Administrador eliminado.");
                     break;
                 default:
@@ -120,18 +144,25 @@ public class MenuSuperAdminImpl extends VistaImpl {
         try {
             switch (op) {
                 case 1:
-                    for (EmpleadoDTO e : controller.listarEmpleados()) {
-                        System.out.println("ID: " + e.getId() + " | Código: " + e.getCodigo() + " | Nombre: " + e.getNombre());
+                    for (UsuarioDTO u : adminController.listarTodosLosUsuarios(usuarioSesion)) {
+                        if (u instanceof EmpleadoDTO e) {
+                            System.out.println("ID: " + e.getId() + " | Código: " + e.getCodigo() + " | Nombre: " + e.getNombre());
+                        }
                     }
                     break;
                 case 2:
                     EmpleadoDTO dtoReg = new EmpleadoDTO();
                     dtoReg.setNombre(leerTexto("Nombre"));
+                    dtoReg.setApellido(leerTexto("Apellido"));
+                    dtoReg.setDireccion(leerTexto("Dirección"));
+                    dtoReg.setTelefono(leerTexto("Teléfono"));
                     dtoReg.setCodigo(leerTexto("Código del empleado"));
+                    dtoReg.setEspecialidad(leerTexto("Especialidad"));
                     dtoReg.setNombreUsuario(leerTexto("Usuario"));
                     dtoReg.setClave(leerTexto("Contraseña"));
                     dtoReg.setRol(Rol.EMPLEADO);
-                    controller.registrarEmpleado(dtoReg);
+
+                    empleadoController.registrarEmpleado(usuarioSesion, dtoReg);
                     System.out.println("Empleado registrado correctamente.");
                     break;
                 case 3:
@@ -139,16 +170,21 @@ public class MenuSuperAdminImpl extends VistaImpl {
                     EmpleadoDTO dtoMod = new EmpleadoDTO();
                     dtoMod.setId(idMod);
                     dtoMod.setNombre(leerTexto("Nuevo Nombre"));
+                    dtoMod.setApellido(leerTexto("Nuevo Apellido"));
+                    dtoMod.setDireccion(leerTexto("Nueva Dirección"));
+                    dtoMod.setTelefono(leerTexto("Nuevo Teléfono"));
                     dtoMod.setCodigo(leerTexto("Nuevo Código del empleado"));
+                    dtoMod.setEspecialidad(leerTexto("Nueva Especialidad"));
                     dtoMod.setNombreUsuario(leerTexto("Nuevo Usuario"));
                     dtoMod.setClave(leerTexto("Nueva Contraseña"));
                     dtoMod.setRol(Rol.EMPLEADO);
-                    controller.actualizarEmpleado(dtoMod);
+
+                    adminController.modificarUsuario(usuarioSesion, dtoMod);
                     System.out.println("Empleado modificado correctamente.");
                     break;
                 case 4:
                     int idElim = leerEntero("ID del empleado a eliminar");
-                    controller.eliminarEmpleado(idElim);
+                    adminController.eliminarUsuario(usuarioSesion, idElim);
                     System.out.println("Empleado eliminado.");
                     break;
                 default:
@@ -178,18 +214,24 @@ public class MenuSuperAdminImpl extends VistaImpl {
         try {
             switch (op) {
                 case 1:
-                    for (SocioDTO s : controller.listarSocios()) {
-                        System.out.println("ID: " + s.getId() + " | DNI: " + s.getDni() + " | Nombre: " + s.getNombre());
+                    for (UsuarioDTO u : adminController.listarTodosLosUsuarios(usuarioSesion)) {
+                        if (u instanceof SocioDTO s) {
+                            System.out.println("ID: " + s.getId() + " | DNI: " + s.getDni() + " | Nombre: " + s.getNombre());
+                        }
                     }
                     break;
                 case 2:
                     SocioDTO dtoReg = new SocioDTO();
                     dtoReg.setNombre(leerTexto("Nombre"));
+                    dtoReg.setApellido(leerTexto("Apellido"));
+                    dtoReg.setDireccion(leerTexto("Dirección"));
+                    dtoReg.setTelefono(leerTexto("Teléfono"));
                     dtoReg.setDni(leerTexto("DNI"));
                     dtoReg.setNombreUsuario(leerTexto("Usuario"));
                     dtoReg.setClave(leerTexto("Contraseña"));
                     dtoReg.setRol(Rol.SOCIO);
-                    controller.registrarSocio(dtoReg);
+
+                    adminController.modificarUsuario(usuarioSesion, dtoReg); // o a través del controlador correspondiente
                     System.out.println("Socio registrado correctamente.");
                     break;
                 case 3:
@@ -197,16 +239,20 @@ public class MenuSuperAdminImpl extends VistaImpl {
                     SocioDTO dtoMod = new SocioDTO();
                     dtoMod.setId(idMod);
                     dtoMod.setNombre(leerTexto("Nuevo Nombre"));
+                    dtoMod.setApellido(leerTexto("Nuevo Apellido"));
+                    dtoMod.setDireccion(leerTexto("Nueva Dirección"));
+                    dtoMod.setTelefono(leerTexto("Nuevo Teléfono"));
                     dtoMod.setDni(leerTexto("Nuevo DNI"));
                     dtoMod.setNombreUsuario(leerTexto("Nuevo Usuario"));
                     dtoMod.setClave(leerTexto("Nueva Contraseña"));
                     dtoMod.setRol(Rol.SOCIO);
-                    controller.actualizarSocio(dtoMod);
+
+                    adminController.modificarUsuario(usuarioSesion, dtoMod);
                     System.out.println("Socio modificado correctamente.");
                     break;
                 case 4:
                     int idElim = leerEntero("ID del socio a eliminar");
-                    controller.eliminarSocio(idElim);
+                    adminController.eliminarUsuario(usuarioSesion, idElim);
                     System.out.println("Socio eliminado.");
                     break;
                 default:

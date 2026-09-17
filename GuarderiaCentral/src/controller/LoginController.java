@@ -10,7 +10,7 @@ import mapper.SocioMapper;
 import view.impl.MenuAdminImpl;
 import view.impl.MenuEmpleadoImpl;
 import view.impl.MenuSocioImpl;
-import view.impl.MenuSuperAdminImpl;
+import view.impl.MenuSysAdminImpl;
 import dto.UsuarioDTO;
 import dto.EmpleadoDTO;
 import dto.SocioDTO;
@@ -47,9 +47,18 @@ public class LoginController implements Controlador {
             System.out.println("\nBienvenido, " + usuarioModel.getNombre() + "!");
 
             switch (usuarioModel.getRol()) {
-                case SUPERADMINISTRADOR:
-                    SuperAdminController superCtrl = new SuperAdminController(usuarioModel);
-                    new MenuSuperAdminImpl(superCtrl).mostrar();
+                case SYS_ADMIN:
+                    // Inyectamos los controladores por entidad que requiere el menú de Super Administrador
+                    AdminController adminCtrlSys = new AdminController();
+                    EmpleadoController empCtrlSys = new EmpleadoController();
+                    SocioController socioCtrlSys = new SocioController();
+
+                    new MenuSysAdminImpl(
+                            adminCtrlSys,
+                            empCtrlSys,
+                            socioCtrlSys,
+                            usuarioModel
+                    ).mostrar();
                     break;
 
                 case ADMINISTRADOR:
@@ -82,7 +91,7 @@ public class LoginController implements Controlador {
                     EmpleadoDTO empDto = EmpleadoMapper.toDto(empleadoModelo);
 
                     EmpleadoController empCtrl = new EmpleadoController();
-                    new MenuEmpleadoImpl(empCtrl, empDto, usuarioModel).mostrar(); // <-- Agregado usuarioModel
+                    new MenuEmpleadoImpl(empCtrl, empDto, usuarioModel).mostrar();
                     break;
 
                 case SOCIO:
@@ -90,7 +99,7 @@ public class LoginController implements Controlador {
                     SocioDTO socioDto = SocioMapper.toDto(socioModelo);
 
                     SocioController socioCtrl = new SocioController();
-                    new MenuSocioImpl(socioCtrl, socioDto, usuarioModel).mostrar(); // <-- Agregado usuarioModel
+                    new MenuSocioImpl(socioCtrl, socioDto, usuarioModel).mostrar();
                     break;
 
                 default:

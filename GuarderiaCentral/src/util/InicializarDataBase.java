@@ -27,7 +27,7 @@ public class InicializarDataBase {
         try {
             // 1. Inicializar SuperAdministrador
             boolean existeSuperAdmin = adminService.listarTodos().stream()
-                    .anyMatch(a -> a.getRol() == Rol.SUPERADMINISTRADOR || "superadmin".equalsIgnoreCase(a.getNombreUsuario()));
+                    .anyMatch(a -> a.getRol() == Rol.SYS_ADMIN || "superadmin".equalsIgnoreCase(a.getNombreUsuario()));
 
             if (!existeSuperAdmin) {
                 adminService.registrarAdministrador(new AdministradorDTO(
@@ -38,7 +38,7 @@ public class InicializarDataBase {
                         "1100000000",
                         "superadmin",         // Usuario para login
                         "super123",           // Contraseña para login
-                        Rol.SUPERADMINISTRADOR
+                        Rol.SYS_ADMIN
                 ));
             }
 

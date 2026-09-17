@@ -77,7 +77,7 @@ public class GarageController {
                 yield List.of();
             }
 
-            case SUPERADMINISTRADOR -> throw new SecurityException("Acceso denegado: El superadministrador únicamente gestiona usuarios.");
+            case SYS_ADMIN -> throw new SecurityException("Acceso denegado: El superadministrador únicamente gestiona usuarios.");
         };
     }
 

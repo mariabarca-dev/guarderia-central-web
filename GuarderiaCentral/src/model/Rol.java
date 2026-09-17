@@ -5,5 +5,5 @@ public enum Rol {
     ADMINISTRADOR,
     EMPLEADO,
     SOCIO,
-    SUPERADMINISTRADOR
+    SYS_ADMIN
 }

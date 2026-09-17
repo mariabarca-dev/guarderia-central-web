@@ -63,7 +63,7 @@ public class UsuarioMapper {
 
         // 2. Si llega un UsuarioDTO genérico, se evalúa el ROL para instanciar el Modelo
         switch (dto.getRol()) {
-            case SUPERADMINISTRADOR:
+            case SYS_ADMIN:
             case ADMINISTRADOR:
                 return new Administrador(
                         dto.getId(),
