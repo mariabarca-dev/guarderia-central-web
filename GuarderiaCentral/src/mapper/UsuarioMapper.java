@@ -19,6 +19,9 @@ public class UsuarioMapper {
             return null;
         }
 
+        if (model instanceof Administrador) {
+            return AdministradorMapper.toDto((Administrador) model);
+        }
         if (model instanceof Empleado) {
             return EmpleadoMapper.toDto((Empleado) model);
         }
@@ -28,8 +31,13 @@ public class UsuarioMapper {
 
         // Fallback genérico si fuera solo Usuario
         return new UsuarioDTO(
-                model.getId(), model.getNombre(), model.getDireccion(),
-                model.getTelefono(), model.getNombreUsuario(), model.getClave(),
+                model.getId(),
+                model.getNombre(),
+                model.getApellido(), // <--- Mapeo de apellido
+                model.getDireccion(),
+                model.getTelefono(),
+                model.getNombreUsuario(),
+                model.getClave(),
                 model.getRol()
         );
     }
@@ -60,6 +68,7 @@ public class UsuarioMapper {
                 return new Administrador(
                         dto.getId(),
                         dto.getNombre(),
+                        dto.getApellido(), // <--- Mapeo de apellido
                         dto.getDireccion(),
                         dto.getTelefono(),
                         dto.getNombreUsuario(),
@@ -71,6 +80,7 @@ public class UsuarioMapper {
                 return new Empleado(
                         dto.getId(),
                         dto.getNombre(),
+                        dto.getApellido(), // <--- Mapeo de apellido
                         dto.getDireccion(),
                         dto.getTelefono(),
                         dto.getNombreUsuario(),
@@ -84,6 +94,7 @@ public class UsuarioMapper {
                 return new Socio(
                         dto.getId(),
                         dto.getNombre(),
+                        dto.getApellido(), // <--- Mapeo de apellido
                         dto.getDireccion(),
                         dto.getTelefono(),
                         dto.getNombreUsuario(),

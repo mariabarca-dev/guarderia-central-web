@@ -12,40 +12,42 @@ public class SocioMapper {
      * @param dto El objeto SocioDTO origen.
      * @return Un nuevo objeto Socio con los datos del DTO.
      */
-    public static Socio toModel(SocioDTO dto) { // <--- Firma simplificada (sin el int id externo)
+    public static Socio toModel(SocioDTO dto) {
         if (dto == null) return null;
 
         return new Socio(
-            dto.getId(), // <--- Obtenemos el ID directamente del DTO
-            dto.getNombre(),
-            dto.getDireccion(),
-            dto.getTelefono(),
-            dto.getNombreUsuario(),
-            dto.getClave(),
-            Rol.SOCIO, // Rol fijo por lógica de negocio
-            dto.getDni(),
-            dto.getFechaIngreso()
+                dto.getId(),
+                dto.getNombre(),
+                dto.getApellido(), // <--- Mapeo de apellido
+                dto.getDireccion(),
+                dto.getTelefono(),
+                dto.getNombreUsuario(),
+                dto.getClave(),
+                Rol.SOCIO, // Rol fijo por lógica de negocio
+                dto.getDni(),
+                dto.getFechaIngreso()
         );
     }
 
     /**
-     * Versión sobrecargada para casos donde se requiera un ID específico (poco común con DTOs).
+     * Versión sobrecargada para casos donde se requiera un ID específico.
      * @deprecated Se prefiere usar toModel(SocioDTO) donde el ID viene en el DTO.
      */
     @Deprecated
     public static Socio toModel(SocioDTO dto, int id) {
         if (dto == null) return null;
-        // Forzamos el ID recibido por parámetro (si se usa la sobrecarga)
+
         return new Socio(
-            id,
-            dto.getNombre(),
-            dto.getDireccion(),
-            dto.getTelefono(),
-            dto.getNombreUsuario(),
-            dto.getClave(),
-            Rol.SOCIO,
-            dto.getDni(),
-            dto.getFechaIngreso()
+                id,
+                dto.getNombre(),
+                dto.getApellido(), // <--- Mapeo de apellido
+                dto.getDireccion(),
+                dto.getTelefono(),
+                dto.getNombreUsuario(),
+                dto.getClave(),
+                Rol.SOCIO,
+                dto.getDni(),
+                dto.getFechaIngreso()
         );
     }
 
@@ -58,15 +60,16 @@ public class SocioMapper {
         if (model == null) return null;
 
         return new SocioDTO(
-            model.getId(),
-            model.getNombre(),
-            model.getDireccion(),
-            model.getTelefono(),
-            model.getNombreUsuario(),
-            model.getClave(),
-            model.getRol(), // Usamos el rol del modelo
-            model.getDni(),
-            model.getFechaIngreso()
+                model.getId(),
+                model.getNombre(),
+                model.getApellido(), // <--- Mapeo de apellido
+                model.getDireccion(),
+                model.getTelefono(),
+                model.getNombreUsuario(),
+                model.getClave(),
+                model.getRol(), // Usamos el rol del modelo
+                model.getDni(),
+                model.getFechaIngreso()
         );
     }
 }

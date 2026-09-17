@@ -15,6 +15,7 @@ public class AdministradorMapper {
         return new Administrador(
                 dto.getId(),
                 dto.getNombre(),
+                dto.getApellido(), // <--- Atributo mapeado
                 dto.getDireccion(),
                 dto.getTelefono(),
                 dto.getNombreUsuario(),
@@ -32,6 +33,7 @@ public class AdministradorMapper {
         return new AdministradorDTO(
                 model.getId(),
                 model.getNombre(),
+                model.getApellido(), // <--- Atributo mapeado
                 model.getDireccion(),
                 model.getTelefono(),
                 model.getNombreUsuario(),
