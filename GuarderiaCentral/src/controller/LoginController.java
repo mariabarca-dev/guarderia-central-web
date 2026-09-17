@@ -53,15 +53,12 @@ public class LoginController implements Controlador {
                     break;
 
                 case ADMINISTRADOR:
-                    // Instanciación corregida: se pasa solo el usuario al constructor del controlador (o vacío según corresponda)
-                    AdminController adminCtrl = new AdminController(usuarioModel);
-                    AsignacionEmpleadoZonaController asigEmpZonaCtrl = new AsignacionEmpleadoZonaController(usuarioModel);
-                    AsignacionVehiculoGarageController asigVehGarCtrl = new AsignacionVehiculoGarageController(usuarioModel);
-                    EmpleadoController empCtrlAdmin = new EmpleadoController(usuarioModel);
-                    SocioController socioCtrlAdmin = new SocioController(usuarioModel);
-                    VehiculoController vehCtrlAdmin = new VehiculoController(usuarioModel);
-
-                    // Controladores con constructores vacíos (sin servicios ni usuario por parámetro)
+                    AdminController adminCtrl = new AdminController();
+                    AsignacionEmpleadoZonaController asigEmpZonaCtrl = new AsignacionEmpleadoZonaController();
+                    AsignacionVehiculoGarageController asigVehGarCtrl = new AsignacionVehiculoGarageController();
+                    EmpleadoController empCtrlAdmin = new EmpleadoController();
+                    SocioController socioCtrlAdmin = new SocioController();
+                    VehiculoController vehCtrlAdmin = new VehiculoController();
                     GarageController garageCtrlAdmin = new GarageController();
                     PropiedadGarageController propGarCtrlAdmin = new PropiedadGarageController();
                     ZonaController zonaCtrlAdmin = new ZonaController();
@@ -84,16 +81,16 @@ public class LoginController implements Controlador {
                     model.Empleado empleadoModelo = (model.Empleado) usuarioModel;
                     EmpleadoDTO empDto = EmpleadoMapper.toDto(empleadoModelo);
 
-                    EmpleadoController empCtrl = new EmpleadoController(usuarioModel);
-                    new MenuEmpleadoImpl(empCtrl, empDto).mostrar();
+                    EmpleadoController empCtrl = new EmpleadoController();
+                    new MenuEmpleadoImpl(empCtrl, empDto, usuarioModel).mostrar(); // <-- Agregado usuarioModel
                     break;
 
                 case SOCIO:
                     model.Socio socioModelo = (model.Socio) usuarioModel;
                     SocioDTO socioDto = SocioMapper.toDto(socioModelo);
 
-                    SocioController socioCtrl = new SocioController(usuarioModel);
-                    new MenuSocioImpl(socioCtrl, socioDto).mostrar();
+                    SocioController socioCtrl = new SocioController();
+                    new MenuSocioImpl(socioCtrl, socioDto, usuarioModel).mostrar(); // <-- Agregado usuarioModel
                     break;
 
                 default:

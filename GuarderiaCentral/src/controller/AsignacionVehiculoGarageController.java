@@ -10,36 +10,44 @@ import exceptions.ErrorNegocio;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class AsignacionVehiculoGarageController {
 
     private final AsignacionVehiculoGarageService asignacionService;
 
-    public AsignacionVehiculoGarageController(AsignacionVehiculoGarageService asignacionService) {
-        this.asignacionService = asignacionService;
+    // Patrón de validación de sintaxis y formato para IDs numéricos
+    private static final Pattern PATTERN_ID = Pattern.compile("^[0-9]+$");
+
+    public AsignacionVehiculoGarageController() {
+        this.asignacionService = new AsignacionVehiculoGarageService();
     }
 
     /**
-     * Registra la asignación de un vehículo a un garaje.
+     * Registra la asignación de un vehículo a un garaje validando sintaxis y formato.
      * Acceso: Solo ADMINISTRADOR.
      */
     public void crearAsignacion(Usuario usuarioSesion, AsignacionVehiculoGarageDTO dto) throws ErrorNegocio {
         validarAdministrador(usuarioSesion);
 
         if (dto == null) {
-            throw new IllegalArgumentException("El objeto DTO no puede ser nulo.");
+            throw new ErrorNegocio("Error de formato: El objeto DTO no puede ser nulo.");
         }
-        if (dto.getVehiculo() == null || dto.getVehiculo().getId() <= 0) {
-            throw new IllegalArgumentException("Debe especificar un vehículo válido para realizar la asignación.");
+
+        if (dto.getVehiculo() == null || dto.getVehiculo().getId() <= 0 || !PATTERN_ID.matcher(String.valueOf(dto.getVehiculo().getId())).matches()) {
+            throw new ErrorNegocio("Error de formato: Debe especificar un vehículo válido para realizar la asignación.");
         }
-        if (dto.getGarage() == null || dto.getGarage().getId() <= 0) {
-            throw new IllegalArgumentException("Debe especificar un garaje válido para realizar la asignación.");
+
+        if (dto.getGarage() == null || dto.getGarage().getId() <= 0 || !PATTERN_ID.matcher(String.valueOf(dto.getGarage().getId())).matches()) {
+            throw new ErrorNegocio("Error de formato: Debe especificar un garaje válido para realizar la asignación.");
         }
+
         if (dto.getFechaAsignacionGarage() == null) {
-            throw new IllegalArgumentException("La fecha de asignación no puede ser nula.");
+            throw new ErrorNegocio("Error de formato: La fecha de asignación no puede ser nula.");
         }
+
         if (dto.getFechaAsignacionGarage().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("La fecha de asignación no puede ser una fecha futura.");
+            throw new ErrorNegocio("Error de formato: La fecha de asignación no puede ser una fecha futura.");
         }
 
         asignacionService.crearAsignacion(dto);
@@ -63,11 +71,11 @@ public class AsignacionVehiculoGarageController {
      * Busca la asignación correspondiente a un vehículo específico.
      * Acceso: ADMINISTRADOR, EMPLEADO o el SOCIO dueño del vehículo.
      */
-    public AsignacionVehiculoGarage buscarPorVehiculo(Usuario usuarioSesion, int vehiculoId) {
+    public AsignacionVehiculoGarage buscarPorVehiculo(Usuario usuarioSesion, int vehiculoId) throws ErrorNegocio {
         validarUsuarioAutenticado(usuarioSesion);
 
-        if (vehiculoId <= 0) {
-            throw new IllegalArgumentException("El ID de vehículo proporcionado no es válido.");
+        if (vehiculoId <= 0 || !PATTERN_ID.matcher(String.valueOf(vehiculoId)).matches()) {
+            throw new ErrorNegocio("Error de formato: El ID de vehículo proporcionado no es válido.");
         }
 
         AsignacionVehiculoGarage asignacion = asignacionService.buscarPorVehiculo(vehiculoId);

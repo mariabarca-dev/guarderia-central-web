@@ -4,15 +4,19 @@ import controller.EmpleadoController;
 import dto.EmpleadoDTO;
 import dto.ZonaDTO;
 import dto.VehiculoDTO;
+import model.Usuario; // <- Importante
 import java.util.List;
 
 public class MenuEmpleadoImpl extends VistaImpl {
     private final EmpleadoController empleadoController;
     private final EmpleadoDTO empleadoLogueado;
+    private final Usuario usuarioSesion; // <- Guardamos la sesión aquí
 
-    public MenuEmpleadoImpl(EmpleadoController empleadoController, EmpleadoDTO empleado) {
+    // Modificamos el constructor para recibir también el Usuario de sesión
+    public MenuEmpleadoImpl(EmpleadoController empleadoController, EmpleadoDTO empleado, Usuario usuarioSesion) {
         this.empleadoController = empleadoController;
         this.empleadoLogueado = empleado;
+        this.usuarioSesion = usuarioSesion;
     }
 
     @Override
@@ -49,17 +53,16 @@ public class MenuEmpleadoImpl extends VistaImpl {
 
     private void listarZonasAsignadas() {
         try {
-            // Se mantiene el uso de List<ZonaDTO> ya que el controlador devuelve DTOs
-            List<ZonaDTO> zonas = empleadoController.listarZonasAsignadas(empleadoLogueado.getId());
-            
+            // CORRECCIÓN: Le pasamos 'usuarioSesion' como primer argumento y luego el ID
+            List<ZonaDTO> zonas = empleadoController.listarZonasAsignadas(this.usuarioSesion, empleadoLogueado.getId());
+
             if (zonas == null || zonas.isEmpty()) {
                 System.out.println("No tiene zonas asignadas.");
             } else {
                 imprimirEncabezado("--- Zonas asignadas ---");
                 for (ZonaDTO z : zonas) {
-                    // CORRECCIÓN: Se usan los métodos estándar de ZonaDTO (sin sufijo DTO)
-                    System.out.println("Zona: " + z.getLetra() + 
-                                     " - Capacidad: " + z.getCapacidadVehiculos());
+                    System.out.println("Zona: " + z.getLetra() +
+                            " - Capacidad: " + z.getCapacidadVehiculos());
                 }
             }
         } catch (Exception e) {
@@ -70,18 +73,17 @@ public class MenuEmpleadoImpl extends VistaImpl {
 
     private void listarVehiculosACargo() {
         try {
-            // Se mantiene el uso de List<VehiculoDTO> ya que el controlador devuelve DTOs
-            List<VehiculoDTO> vehiculos = empleadoController.listarVehiculosBajoResponsabilidad(empleadoLogueado.getId());
-            
+            // CORRECCIÓN: Le pasamos 'usuarioSesion' como primer argumento y luego el ID
+            List<VehiculoDTO> vehiculos = empleadoController.listarVehiculosBajoResponsabilidad(this.usuarioSesion, empleadoLogueado.getId());
+
             if (vehiculos == null || vehiculos.isEmpty()) {
                 System.out.println("No tiene vehículos a cargo.");
             } else {
                 imprimirEncabezado("--- Vehículos a cargo ---");
                 for (VehiculoDTO v : vehiculos) {
-                    // CORRECCIÓN: Se usan los métodos estándar de VehiculoDTO
-                    System.out.println("ID: " + v.getId() + 
-                                     " - Matrícula: " + v.getMatricula() + 
-                                     " - Tipo: " + v.getTipo());
+                    System.out.println("ID: " + v.getId() +
+                            " - Matrícula: " + v.getMatricula() +
+                            " - Tipo: " + v.getTipo());
                 }
             }
         } catch (Exception e) {

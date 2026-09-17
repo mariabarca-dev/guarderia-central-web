@@ -7,6 +7,7 @@ import service.EmpleadoService;
 import service.VehiculoService;
 import model.Usuario;
 import model.Rol;
+import model.Empleado;
 import dto.ZonaDTO;
 import dto.VehiculoDTO;
 import mapper.AsignacionEmpleadoZonaMapper;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class EmpleadoController {
+public class EmpleadoController implements Controlador {
 
     private final AsignacionEmpleadoZonaService asignacionService;
     private final VehiculoService vehiculoService;
@@ -28,22 +29,27 @@ public class EmpleadoController {
     private static final Pattern PATTERN_CLAVE = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._]).{8,64}$");
     private static final Pattern PATTERN_CODIGO = Pattern.compile("^[a-zA-Z0-9\\-_]{3,20}$");
     private static final Pattern PATTERN_ESPECIALIDAD = Pattern.compile("^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s\\.\\-\\_]{3,100}$");
+    private static final Pattern PATTERN_ID = Pattern.compile("^[0-9]+$");
 
-    public EmpleadoController(Usuario usuario) {
-        if (usuario == null || (usuario.getRol() != Rol.EMPLEADO && usuario.getRol() != Rol.ADMINISTRADOR)) {
-            throw new SecurityException("Acceso denegado: No tiene permisos para acceder a la gestión de empleados.");
-        }
+    public EmpleadoController() {
         this.asignacionService = new AsignacionEmpleadoZonaService();
         this.vehiculoService = new VehiculoService();
         this.empleadoService = new EmpleadoService();
     }
 
+    @Override
+    public void login(String nombreUsuario, String claveIngresada) {
+        // La autenticación centralizada se maneja en LoginController
+    }
+
     /**
      * Lista las zonas asignadas a un empleado específico.
-     * @param empleadoId El ID del empleado logueado (int).
-     * @return Una lista de ZonaDTO listos para mostrarse en la vista.
+     * Acceso: EMPLEADO (solo las suyas) o ADMINISTRADOR (cualquiera).
      */
-    public List<ZonaDTO> listarZonasAsignadas(int empleadoId) {
+    public List<ZonaDTO> listarZonasAsignadas(Usuario usuarioSesion, int empleadoId) {
+        validarEmpleadoOAdmin(usuarioSesion);
+        validarPermisoEmpleado(usuarioSesion, empleadoId);
+
         return asignacionService.listarTodas().stream()
                 .filter(asig -> asig.getEmpleado() != null && asig.getEmpleado().getId() == empleadoId)
                 .map(AsignacionEmpleadoZonaMapper::toDto)
@@ -53,19 +59,22 @@ public class EmpleadoController {
 
     /**
      * Lista los vehículos bajo la responsabilidad de un empleado específico.
-     * @param empleadoId El ID del empleado logueado (int).
-     * @return Una lista de VehiculoDTO listos para mostrarse en la vista.
+     * Acceso: EMPLEADO (solo los suyos) o ADMINISTRADOR (cualquiera).
      */
-    public List<VehiculoDTO> listarVehiculosBajoResponsabilidad(int empleadoId) {
+    public List<VehiculoDTO> listarVehiculosBajoResponsabilidad(Usuario usuarioSesion, int empleadoId) {
+        validarEmpleadoOAdmin(usuarioSesion);
+        validarPermisoEmpleado(usuarioSesion, empleadoId);
+
         return vehiculoService.listarVehiculosPorResponsable(empleadoId);
     }
 
     /**
      * Registra un nuevo empleado validando la sintaxis de los campos de su DTO.
-     * @param dto El objeto EmpleadoDTO con la información del empleado.
-     * @throws ErrorNegocio Si ocurre un error de formato o en la capa de negocio.
+     * Acceso: Solo ADMINISTRADOR.
      */
-    public void registrarEmpleado(EmpleadoDTO dto) throws ErrorNegocio {
+    public void registrarEmpleado(Usuario usuarioSesion, EmpleadoDTO dto) throws ErrorNegocio {
+        validarAdministrador(usuarioSesion);
+
         if (dto == null) {
             throw new ErrorNegocio("El DTO del empleado no puede ser nulo.");
         }
@@ -108,5 +117,35 @@ public class EmpleadoController {
 
         // Delegación al servicio
         empleadoService.registrarEmpleado(dto);
+    }
+
+    // --- Métodos Privados de Validación de Sesión y Seguridad ---
+
+    private void validarUsuarioAutenticado(Usuario usuario) {
+        if (usuario == null) {
+            throw new SecurityException("Debe iniciar sesión para realizar esta operación.");
+        }
+    }
+
+    private void validarEmpleadoOAdmin(Usuario usuario) {
+        validarUsuarioAutenticado(usuario);
+        if (usuario.getRol() != Rol.EMPLEADO && usuario.getRol() != Rol.ADMINISTRADOR) {
+            throw new SecurityException("Acceso denegado: Se requieren permisos de EMPLEADO o ADMINISTRADOR.");
+        }
+    }
+
+    private void validarAdministrador(Usuario usuario) {
+        validarUsuarioAutenticado(usuario);
+        if (usuario.getRol() != Rol.ADMINISTRADOR) {
+            throw new SecurityException("Acceso denegado: Se requieren permisos de ADMINISTRADOR.");
+        }
+    }
+
+    private void validarPermisoEmpleado(Usuario usuarioSesion, int empleadoId) {
+        if (usuarioSesion.getRol() == Rol.EMPLEADO && usuarioSesion instanceof Empleado empleado) {
+            if (empleado.getId() != empleadoId) {
+                throw new SecurityException("Acceso denegado: No tiene permisos para consultar información de otro empleado.");
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ import exceptions.MatriculaDuplicadaException;
 import service.VehiculoService;
 import service.AsignacionVehiculoGarageService;
 import model.Usuario;
+import model.Rol;
 import model.TipoVehiculo;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,17 +20,13 @@ public class VehiculoController implements Controlador {
 
     private final VehiculoService vehiculoService;
     private final AsignacionVehiculoGarageService asignacionVehiculoGarageService;
-    private final Usuario usuarioActual;
 
     // Patrón de sintaxis y formato para matrículas (ej. alfanumérico de 6 a 10 caracteres con guiones opcionales)
     private static final Pattern PATTERN_MATRICULA = Pattern.compile("^[A-Z0-9\\-]{6,10}$");
     private static final Pattern PATTERN_NOMBRE_VEHICULO = Pattern.compile("^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s]{2,50}$");
+    private static final Pattern PATTERN_ID = Pattern.compile("^[0-9]+$");
 
-    public VehiculoController(Usuario usuario) {
-        if (usuario == null) {
-            throw new IllegalArgumentException("El usuario no puede ser nulo para inicializar el controlador.");
-        }
-        this.usuarioActual = usuario;
+    public VehiculoController() {
         this.vehiculoService = new VehiculoService();
         this.asignacionVehiculoGarageService = new AsignacionVehiculoGarageService();
     }
@@ -39,11 +36,18 @@ public class VehiculoController implements Controlador {
         throw new UnsupportedOperationException("El controlador de vehículos no soporta operaciones de inicio de sesión.");
     }
 
-    public List<VehiculoDTO> listarTodosLosVehiculos() {
+    public List<VehiculoDTO> listarTodosLosVehiculos(Usuario usuarioSesion) {
+        validarEmpleadoOAdmin(usuarioSesion);
         return vehiculoService.listarTodos();
     }
 
-    public VehiculoDTO buscarVehiculoPorId(int id) {
+    public VehiculoDTO buscarVehiculoPorId(Usuario usuarioSesion, int id) {
+        validarEmpleadoOAdmin(usuarioSesion);
+
+        if (id <= 0 || !PATTERN_ID.matcher(String.valueOf(id)).matches()) {
+            throw new IllegalArgumentException("Error de formato: El ID del vehículo no es válido.");
+        }
+
         try {
             return vehiculoService.buscarPorId(id);
         } catch (Exception e) {
@@ -51,7 +55,9 @@ public class VehiculoController implements Controlador {
         }
     }
 
-    public void registrarVehiculo(VehiculoDTO dto) throws ErrorNegocio, MatriculaDuplicadaException {
+    public void registrarVehiculo(Usuario usuarioSesion, VehiculoDTO dto) throws ErrorNegocio, MatriculaDuplicadaException {
+        validarAdministrador(usuarioSesion);
+
         // 1. Validaciones de Sintaxis y Formato (Controller)
         if (dto == null) {
             throw new ErrorNegocio("El DTO del vehículo no puede ser nulo.");
@@ -82,7 +88,9 @@ public class VehiculoController implements Controlador {
         vehiculoService.registrarVehiculo(dto);
     }
 
-    public void modificarVehiculo(VehiculoDTO dto) throws ErrorNegocio, MatriculaDuplicadaException {
+    public void modificarVehiculo(Usuario usuarioSesion, VehiculoDTO dto) throws ErrorNegocio, MatriculaDuplicadaException {
+        validarAdministrador(usuarioSesion);
+
         if (dto == null) {
             throw new ErrorNegocio("El DTO del vehículo no puede ser nulo.");
         }
@@ -109,8 +117,10 @@ public class VehiculoController implements Controlador {
         vehiculoService.actualizarVehiculo(dto);
     }
 
-    public void eliminarVehiculo(int id) throws ErrorNegocio {
-        if (id <= 0) {
+    public void eliminarVehiculo(Usuario usuarioSesion, int id) throws ErrorNegocio {
+        validarAdministrador(usuarioSesion);
+
+        if (id <= 0 || !PATTERN_ID.matcher(String.valueOf(id)).matches()) {
             throw new ErrorNegocio("El ID ingresado debe ser un número positivo.");
         }
 
@@ -128,7 +138,13 @@ public class VehiculoController implements Controlador {
         }
     }
 
-    public List<VehiculoDTO> listarVehiculosPorZona(int zonaId) {
+    public List<VehiculoDTO> listarVehiculosPorZona(Usuario usuarioSesion, int zonaId) {
+        validarEmpleadoOAdmin(usuarioSesion);
+
+        if (zonaId <= 0 || !PATTERN_ID.matcher(String.valueOf(zonaId)).matches()) {
+            throw new IllegalArgumentException("Error de formato: El ID de la zona no es válido.");
+        }
+
         List<VehiculoDTO> todosLosVehiculos = vehiculoService.listarTodos();
         List<VehiculoDTO> resultado = new ArrayList<>();
 
@@ -140,5 +156,27 @@ public class VehiculoController implements Controlador {
             }
         }
         return resultado;
+    }
+
+    // --- Métodos Privados de Validación de Sesión y Seguridad ---
+
+    private void validarUsuarioAutenticado(Usuario usuario) {
+        if (usuario == null) {
+            throw new SecurityException("Debe iniciar sesión para realizar esta operación.");
+        }
+    }
+
+    private void validarEmpleadoOAdmin(Usuario usuario) {
+        validarUsuarioAutenticado(usuario);
+        if (usuario.getRol() != Rol.EMPLEADO && usuario.getRol() != Rol.ADMINISTRADOR) {
+            throw new SecurityException("Acceso denegado: Se requieren permisos de EMPLEADO o ADMINISTRADOR.");
+        }
+    }
+
+    private void validarAdministrador(Usuario usuario) {
+        validarUsuarioAutenticado(usuario);
+        if (usuario.getRol() != Rol.ADMINISTRADOR) {
+            throw new SecurityException("Acceso denegado: Se requieren permisos de ADMINISTRADOR.");
+        }
     }
 }

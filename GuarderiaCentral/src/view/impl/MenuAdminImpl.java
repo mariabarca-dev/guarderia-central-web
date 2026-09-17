@@ -185,11 +185,10 @@ public class MenuAdminImpl extends VistaImpl {
             String clave = leerTexto("Clave");
 
             try {
-                // Instanciación usando el constructor completo de SocioDTO
                 SocioDTO dto = new SocioDTO(
                         0, nombre, apellido, direccion, telefono, usuario, clave, Rol.SOCIO, dni, LocalDate.now()
                 );
-                socioController.registrarSocio(dto);
+                socioController.registrarSocio(usuarioSesion, dto);
                 System.out.println("Socio registrado con éxito.");
             } catch (ErrorNegocio ex) {
                 System.out.println("Error al registrar socio: " + ex.getMessage());
@@ -206,12 +205,13 @@ public class MenuAdminImpl extends VistaImpl {
             String especialidad = leerTexto("Especialidad");
 
             try {
-                // CORRECCIÓN: Instanciación según constructor de EmpleadoDTO
                 EmpleadoDTO empDto = new EmpleadoDTO(
                         0, nombre, apellido, direccion, telefono, nombreUsuario, clave, Rol.EMPLEADO, codigo, especialidad
                 );
-                empleadoController.registrarEmpleado(empDto);
+                empleadoController.registrarEmpleado(usuarioSesion, empDto);
                 System.out.println("Empleado registrado con éxito.");
+            } catch (ErrorNegocio ex) {
+                System.out.println("Error de negocio al registrar empleado: " + ex.getMessage());
             } catch (Exception ex) {
                 System.out.println("Error al registrar empleado: " + ex.getMessage());
             }
@@ -221,7 +221,7 @@ public class MenuAdminImpl extends VistaImpl {
     private void modificarUsuario(int id, String tipo) {
         if ("socio".equalsIgnoreCase(tipo)) {
             try {
-                SocioDTO socio = socioController.buscarSocioPorId(id);
+                SocioDTO socio = socioController.buscarSocioPorId(usuarioSesion, id);
                 if (socio == null) {
                     System.out.println("Error: No existe el socio especificado.");
                     return;
@@ -233,13 +233,12 @@ public class MenuAdminImpl extends VistaImpl {
                 String nuevoTelefono = leerTextoConLimite("Nuevo Teléfono (actual: " + socio.getTelefono() + ")", LIMITE_TELEFONO);
                 String nuevoDni = leerTextoConLimite("Nuevo DNI (actual: " + socio.getDni() + ")", LIMITE_DNI);
 
-                // CORRECCIÓN: Uso de getNombreUsuario() heredado de UsuarioDTO
                 SocioDTO socioActualizado = new SocioDTO(
                         id, nuevoNombre, nuevoApellido, nuevaDireccion, nuevoTelefono,
                         socio.getNombreUsuario(), socio.getClave(), Rol.SOCIO, nuevoDni, socio.getFechaIngreso()
                 );
 
-                socioController.modificarSocio(socioActualizado);
+                socioController.modificarSocio(usuarioSesion, socioActualizado);
                 System.out.println("Socio modificado exitosamente.");
 
             } catch (ErrorNegocio ex) {
@@ -254,7 +253,7 @@ public class MenuAdminImpl extends VistaImpl {
         int id = leerNumeroPositivo("Ingrese ID a eliminar");
         if ("socio".equalsIgnoreCase(tipo)) {
             try {
-                socioController.eliminarSocio(id);
+                socioController.eliminarSocio(usuarioSesion, id);
                 System.out.println("Socio eliminado con éxito.");
             } catch (ErrorNegocio ex) {
                 System.out.println("Error al eliminar socio: " + ex.getMessage());
@@ -273,9 +272,8 @@ public class MenuAdminImpl extends VistaImpl {
         float ancho = (float) leerNumeroPositivo("Ancho del vehículo");
 
         try {
-            // CORRECCIÓN: Uso de VehiculoDTO con el constructor completo (8 parámetros)
             VehiculoDTO dto = new VehiculoDTO(0, 0, 0, nombre, matricula, tipo, profundidad, ancho);
-            vehiculoController.registrarVehiculo(dto);
+            vehiculoController.registrarVehiculo(usuarioSesion, dto);
             System.out.println("Vehículo registrado correctamente.");
         } catch (ErrorNegocio ex) {
             System.out.println("Error al registrar vehículo: " + ex.getMessage());
@@ -284,7 +282,7 @@ public class MenuAdminImpl extends VistaImpl {
 
     private void modificarVehiculo(int idVehiculo) {
         try {
-            VehiculoDTO v = vehiculoController.buscarVehiculoPorId(idVehiculo);
+            VehiculoDTO v = vehiculoController.buscarVehiculoPorId(usuarioSesion, idVehiculo);
             if (v == null) {
                 System.out.println("Error: Vehículo no encontrado.");
                 return;
@@ -294,11 +292,10 @@ public class MenuAdminImpl extends VistaImpl {
             String nuevoNombre = leerTexto("Nuevo Nombre/Marca (actual: " + v.getNombre() + ")");
             String nuevoTipo = leerTexto("Nuevo Tipo/Modelo (actual: " + v.getTipo() + ")");
 
-            // CORRECCIÓN: Preserva id, socioId, empleadoId, dimensiones y actualiza los modificados
             VehiculoDTO vActualizado = new VehiculoDTO(
                     v.getId(), v.getSocioId(), v.getEmpleadoId(), nuevoNombre, nuevaMatricula, nuevoTipo, v.getProfundidad(), v.getAncho()
             );
-            vehiculoController.modificarVehiculo(vActualizado);
+            vehiculoController.modificarVehiculo(usuarioSesion, vActualizado);
             System.out.println("Vehículo modificado con éxito.");
 
         } catch (ErrorNegocio ex) {
@@ -309,17 +306,17 @@ public class MenuAdminImpl extends VistaImpl {
     private void eliminarVehiculo() {
         System.out.println("\n--- Lista de Vehículos ---");
         try {
-            vehiculoController.listarTodosLosVehiculos();
+            vehiculoController.listarTodosLosVehiculos(usuarioSesion);
 
             int idVehiculo = leerNumeroPositivo("Ingrese el ID del vehículo a eliminar");
-            VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(idVehiculo);
+            VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(usuarioSesion, idVehiculo);
 
             if (vehiculo == null) {
                 System.out.println("Error: No se encontró ningún vehículo con ese ID.");
                 return;
             }
 
-            vehiculoController.eliminarVehiculo(idVehiculo);
+            vehiculoController.eliminarVehiculo(usuarioSesion, idVehiculo);
             System.out.println("Vehículo eliminado correctamente.");
 
         } catch (ErrorNegocio ex) {
@@ -333,7 +330,6 @@ public class MenuAdminImpl extends VistaImpl {
         float lecturaLuz = (float) leerNumeroPositivo("Lectura Inicial de Luz");
         String letraZona = leerTexto("Letra de la Zona");
 
-        // CORRECCIÓN: Uso de constructor completo de GarageDTO (7 parámetros)
         GarageDTO dto = new GarageDTO(0, numero, lecturaLuz, false, null, null, letraZona);
 
         try {
@@ -386,7 +382,6 @@ public class MenuAdminImpl extends VistaImpl {
         float largo = (float) leerNumeroPositivo("Largo de la zona");
 
         try {
-            // CORRECCIÓN: Uso de ZonaDTO con constructor completo (6 parámetros con id=0 al inicio y floats)
             ZonaDTO dto = new ZonaDTO(0, letra, tipoVehiculo, capacidad, ancho, largo);
             zonaController.registrarZona(usuarioSesion, dto);
             System.out.println("Zona registrada con éxito.");
@@ -433,7 +428,7 @@ public class MenuAdminImpl extends VistaImpl {
 
         int socioId = leerNumeroPositivo("ID del Socio comprador");
         try {
-            SocioDTO socio = socioController.buscarSocioPorId(socioId);
+            SocioDTO socio = socioController.buscarSocioPorId(usuarioSesion, socioId);
             if (socio == null) {
                 System.out.println("Error: No existe un socio con el ID " + socioId);
                 return;
@@ -465,7 +460,7 @@ public class MenuAdminImpl extends VistaImpl {
 
         int vehiculoId = leerNumeroPositivo("ID del Vehículo");
         try {
-            VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(vehiculoId);
+            VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(usuarioSesion, vehiculoId);
             if (vehiculo == null) {
                 System.out.println("Error: No existe un vehículo con el ID " + vehiculoId);
                 return;
@@ -500,7 +495,7 @@ public class MenuAdminImpl extends VistaImpl {
             String idZonaStr = String.valueOf(leerNumeroPositivo("ID de la Zona"));
             String cantVehiculosStr = String.valueOf(leerNumeroPositivo("Cantidad de vehículos bajo su cargo"));
 
-            String resultado = asignacionEmpleadoZonaController.crearAsignacion(idEmpleadoStr, idZonaStr, cantVehiculosStr);
+            String resultado = asignacionEmpleadoZonaController.crearAsignacion(usuarioSesion, idEmpleadoStr, idZonaStr, cantVehiculosStr);
             System.out.println(resultado);
         } catch (Exception ex) {
             System.out.println("Error al procesar la asignación del empleado: " + ex.getMessage());
@@ -527,12 +522,15 @@ public class MenuAdminImpl extends VistaImpl {
                 break;
             case 2:
                 int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
-                vehiculoController.listarVehiculosPorZona(idZ);
+                vehiculoController.listarVehiculosPorZona(usuarioSesion, idZ);
                 break;
             case 3:
-                int idZonaEmp = leerNumeroPositivo("Ingrese ID de la Zona");
-                List<ZonaDTO> zonasEmpleado = empleadoController.listarZonasAsignadas(idZonaEmp);
-                System.out.println("Zonas asignadas al ID: " + zonasEmpleado.size());
+                int idEmpleado = leerNumeroPositivo("Ingrese ID del Empleado");
+                List<ZonaDTO> zonasEmpleado = empleadoController.listarZonasAsignadas(usuarioSesion, idEmpleado);
+                System.out.println("Zonas asignadas al empleado: " + zonasEmpleado.size());
+                for (ZonaDTO z : zonasEmpleado) {
+                    System.out.println("- Zona: " + z.getLetra() + " (" + z.getTipoVehiculo() + ")");
+                }
                 break;
             case 4:
                 System.out.println("Volviendo al menú principal...");

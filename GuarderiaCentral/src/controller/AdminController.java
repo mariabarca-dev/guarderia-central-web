@@ -19,16 +19,13 @@ public class AdminController {
     private final EmpleadoService empleadoService;
     private final UsuarioService usuarioService;
 
-    // Patrones de validación de sintaxis y formato (opcional si se validan en el DTO/Vista)
+    // Patrones de validación de sintaxis y formato
     private static final Pattern PATTERN_NOMBRE = Pattern.compile("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]{2,100}$");
     private static final Pattern PATTERN_TELEFONO = Pattern.compile("^[0-9+\\-\\s()]{7,20}$");
     private static final Pattern PATTERN_USUARIO = Pattern.compile("^[a-zA-Z0-9_.]{4,20}$");
     private static final Pattern PATTERN_CLAVE = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._]).{8,64}$");
 
-    public AdminController(Usuario usuario) {
-        if (usuario == null || usuario.getRol() != Rol.ADMINISTRADOR) {
-            throw new SecurityException("Acceso denegado: Se requieren privilegios de Administrador para esta sección.");
-        }
+    public AdminController() {
         this.administradorService = new AdministradorService();
         this.socioService = new SocioService();
         this.empleadoService = new EmpleadoService();
@@ -38,7 +35,9 @@ public class AdminController {
     /**
      * Registra un nuevo Administrador recibiendo el DTO desde la vista.
      */
-    public void registrarAdministrador(AdministradorDTO dto) throws ErrorNegocio {
+    public void registrarAdministrador(Usuario usuarioSesion, AdministradorDTO dto) throws ErrorNegocio {
+        validarAdministrador(usuarioSesion);
+
         if (dto == null) {
             throw new ErrorNegocio("El administrador a registrar no puede ser nulo.");
         }
@@ -78,7 +77,9 @@ public class AdminController {
     /**
      * Polimorfismo de alta de usuario: Registra un DTO invocando al servicio correspondiente.
      */
-    public void registrarUsuario(UsuarioDTO usuario) throws ErrorNegocio {
+    public void registrarUsuario(Usuario usuarioSesion, UsuarioDTO usuario) throws ErrorNegocio {
+        validarAdministrador(usuarioSesion);
+
         if (usuario == null) {
             throw new ErrorNegocio("El usuario a registrar no puede ser nulo.");
         }
@@ -88,7 +89,7 @@ public class AdminController {
         } else if (usuario instanceof EmpleadoDTO empleadoDTO) {
             empleadoService.registrarEmpleado(empleadoDTO);
         } else if (usuario instanceof AdministradorDTO administradorDTO) {
-            registrarAdministrador(administradorDTO); // Reutiliza las validaciones de admin
+            registrarAdministrador(usuarioSesion, administradorDTO); // Reutiliza las validaciones de admin
         } else {
             throw new ErrorNegocio("Tipo de usuario no soportado: " + usuario.getClass().getSimpleName());
         }
@@ -97,14 +98,17 @@ public class AdminController {
     /**
      * Lista todos los usuarios del sistema sin importar su tipo.
      */
-    public List<UsuarioDTO> listarTodosLosUsuarios() {
+    public List<UsuarioDTO> listarTodosLosUsuarios(Usuario usuarioSesion) {
+        validarAdministrador(usuarioSesion);
         return usuarioService.listarTodos();
     }
 
     /**
      * Modifica los datos generales de un usuario.
      */
-    public void modificarUsuario(UsuarioDTO u) throws ErrorNegocio {
+    public void modificarUsuario(Usuario usuarioSesion, UsuarioDTO u) throws ErrorNegocio {
+        validarAdministrador(usuarioSesion);
+
         if (u == null || u.getId() <= 0) {
             throw new ErrorNegocio("El usuario provisto para modificación no es válido.");
         }
@@ -114,10 +118,27 @@ public class AdminController {
     /**
      * Elimina un usuario del sistema por su ID.
      */
-    public void eliminarUsuario(int id) throws ErrorNegocio {
+    public void eliminarUsuario(Usuario usuarioSesion, int id) throws ErrorNegocio {
+        validarAdministrador(usuarioSesion);
+
         if (id <= 0) {
             throw new ErrorNegocio("El ID de usuario a eliminar debe ser un entero positivo.");
         }
         usuarioService.eliminarUsuario(id);
+    }
+
+    // --- Métodos Privados de Validación de Sesión y Seguridad ---
+
+    private void validarUsuarioAutenticado(Usuario usuario) {
+        if (usuario == null) {
+            throw new SecurityException("Debe iniciar sesión para realizar esta operación.");
+        }
+    }
+
+    private void validarAdministrador(Usuario usuario) {
+        validarUsuarioAutenticado(usuario);
+        if (usuario.getRol() != Rol.ADMINISTRADOR) {
+            throw new SecurityException("Acceso denegado: Se requieren permisos de ADMINISTRADOR.");
+        }
     }
 }
