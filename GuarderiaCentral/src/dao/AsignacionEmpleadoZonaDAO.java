@@ -7,7 +7,7 @@ import model.AsignacionEmpleadoZona;
 import model.Empleado;
 import model.Zona;
 
-public interface AsignacionEmpleadoZonaDAO extends GenericDAO<AsignacionEmpleadoZona, Integer> {
+public interface AsignacionEmpleadoZonaDAO{
     void guardar(AsignacionEmpleadoZona asignacion);
     
     void modificar(AsignacionEmpleadoZona asignacion);

@@ -1,20 +1,18 @@
 package dao;
 
 import java.util.List;
-
-import model.Administrador;
 import model.Vehiculo;
 
-public interface VehiculoDAO extends GenericDAO<Vehiculo, Integer> {
+public interface VehiculoDAO {
     void guardar(Vehiculo vehiculo);
     void actualizar(Vehiculo vehiculo);
     void eliminar(String matricula);
+    void eliminar(Integer id);
     Vehiculo buscarPorMatricula(String matricula);
     List<Vehiculo> listarTodos();
-    Vehiculo buscarPorId(int id);
-    
+    Vehiculo buscarPorId(Integer id);
+
     /**
-     * --- CORRECCIÓN: Añadido método para el menú empleado ---
      * Busca todos los vehículos asignados a un empleado específico.
      * @param empleadoId El ID del empleado responsable.
      * @return Una lista de Vehiculo.

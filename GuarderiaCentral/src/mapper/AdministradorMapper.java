@@ -6,49 +6,37 @@ import dto.AdministradorDTO;
 
 public class AdministradorMapper {
 
-    public static Administrador toModel(AdministradorDTO dto) { // <--- Firma simplificada (sin el int id externo)
+    /**
+     * Convierte un AdministradorDTO a su modelo de dominio Administrador.
+     */
+    public static Administrador toModel(AdministradorDTO dto) {
         if (dto == null) return null;
 
         return new Administrador(
-            dto.getId(), // <--- Obtenemos el ID directamente del DTO
-            dto.getNombre(),
-            dto.getDireccion(),
-            dto.getTelefono(),
-            dto.getNombreUsuario(),
-            dto.getClave(),
-            Rol.ADMINISTRADOR // Rol fijo por seguridad
+                dto.getId(),
+                dto.getNombre(),
+                dto.getDireccion(),
+                dto.getTelefono(),
+                dto.getNombreUsuario(),
+                dto.getClave(),
+                Rol.ADMINISTRADOR
         );
     }
 
     /**
-     * @deprecated Se recomienda asignar el ID al DTO y utilizar {@link #toModel(AdministradorDTO)}.
+     * Convierte un modelo de dominio Administrador a AdministradorDTO.
      */
-    @Deprecated
-    public static Administrador toModel(AdministradorDTO dto, int id) {
-        if (dto == null) return null;
-        // Si se usa este método, fuerza el ID pasado por parámetro
-        return new Administrador(
-            id,
-            dto.getNombre(),
-            dto.getDireccion(),
-            dto.getTelefono(),
-            dto.getNombreUsuario(),
-            dto.getClave(),
-            Rol.ADMINISTRADOR
-        );
-    }
-
     public static AdministradorDTO toDto(Administrador model) {
         if (model == null) return null;
 
         return new AdministradorDTO(
-            model.getId(),
-            model.getNombre(),
-            model.getDireccion(),
-            model.getTelefono(),
-            model.getNombreUsuario(),
-            model.getClave(),
-            model.getRol()
+                model.getId(),
+                model.getNombre(),
+                model.getDireccion(),
+                model.getTelefono(),
+                model.getNombreUsuario(),
+                model.getClave(),
+                model.getRol()
         );
     }
 }

@@ -10,13 +10,12 @@ import java.util.List;
 public class ZonaDAOImpl implements ZonaDAO {
 
     private ArchivoZona bd;
+    private final String RUTA_ARCHIVO = "zona.txt";
 
     public ZonaDAOImpl() {
         this.bd = new ArchivoZona();
         this.bd.inicializarBD();
     }
-
-    private final String RUTA_ARCHIVO = "zona.txt";
 
     @Override
     public void guardar(Zona zona) {
@@ -39,19 +38,18 @@ public class ZonaDAOImpl implements ZonaDAO {
         }
         reescribirArchivo(lista);
     }
-//dani
-    // Cumple con GenericDAO<Zona, Integer>
+
     @Override
     public void eliminar(Integer id) {
         if (id == null) return;
         List<Zona> lista = listarTodos();
-        lista.removeIf(z -> z.getId() == id);
+        lista.removeIf(z -> id.equals(z.getId()));
         reescribirArchivo(lista);
     }
 
-    // Mantiene tu método original por si lo usas con la letra de la zona
     @Override
     public void eliminar(String letra) {
+        if (letra == null) return;
         List<Zona> lista = listarTodos();
         lista.removeIf(z -> z.getLetra().equals(letra));
         reescribirArchivo(lista);
@@ -66,12 +64,11 @@ public class ZonaDAOImpl implements ZonaDAO {
                 .orElse(null);
     }
 
-    // Cumple con GenericDAO<Zona, Integer> (cambiado 'int' por 'Integer')
     @Override
     public Zona buscarPorId(Integer id) {
         if (id == null) return null;
         return listarTodos().stream()
-                .filter(z -> z.getId() == id)
+                .filter(z -> id.equals(z.getId()))
                 .findFirst()
                 .orElse(null);
     }
@@ -85,17 +82,13 @@ public class ZonaDAOImpl implements ZonaDAO {
         try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
             String linea;
             while ((linea = br.readLine()) != null) {
+                if (linea.trim().isEmpty()) continue;
                 lista.add(Zona.fromString(linea));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return lista;
-    }
-
-    @Override
-    public Zona buscarPorId(int id) {
-        return null;
     }
 
     private void reescribirArchivo(List<Zona> lista) {

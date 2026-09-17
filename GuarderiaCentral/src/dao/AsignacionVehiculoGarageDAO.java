@@ -7,7 +7,7 @@ import model.AsignacionVehiculoGarage;
 import model.Garage;
 import model.Vehiculo;
 
-public interface AsignacionVehiculoGarageDAO extends GenericDAO<AsignacionVehiculoGarage, Integer> {
+public interface AsignacionVehiculoGarageDAO{
     void guardar(AsignacionVehiculoGarage asignacion);
     
     void modificar(AsignacionVehiculoGarage asignacion);
