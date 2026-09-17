@@ -10,14 +10,19 @@ import exceptions.RegistroNoEncontradoException;
 import exceptions.ZonaSinCapacidadException;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GarageController {
 
     private final GarageService garageService;
 
-    public GarageController(GarageService garageService) {
-        this.garageService = garageService;
+    // Patrones de validación de sintaxis y formato
+    private static final Pattern PATTERN_ZONA = Pattern.compile("^[a-zA-Z]{1,3}$");
+    private static final Pattern PATTERN_DNI = Pattern.compile("^[0-9]{7,10}$");
+
+    public GarageController() {
+        this.garageService = new GarageService();
     }
 
     public void registrarGarage(Usuario usuarioSesion, GarageDTO dto) throws ZonaSinCapacidadException, ErrorNegocio, RegistroNoEncontradoException {
@@ -26,16 +31,29 @@ public class GarageController {
         if (dto == null) {
             throw new IllegalArgumentException("El objeto DTO no puede ser nulo.");
         }
+
+        // Validaciones de formato y sintaxis
         if (dto.getNumeroGarage() <= 0) {
-            throw new IllegalArgumentException("El número de garaje debe ser un entero mayor a 0.");
-        }
-        if (dto.getLecturaLuz() < 0) {
-            throw new IllegalArgumentException("La lectura de luz no puede ser un valor negativo.");
-        }
-        if (dto.getZona() == null || dto.getZona().trim().isEmpty()) {
-            throw new IllegalArgumentException("Debe especificar la letra de la zona del garaje.");
+            throw new ErrorNegocio("Error de formato: El número de garaje debe ser un entero mayor a 0.");
         }
 
+        if (dto.getLecturaLuz() < 0.0) {
+            throw new ErrorNegocio("Error de formato: La lectura de luz no puede ser un valor negativo.");
+        }
+
+        if (dto.getZona() == null || !PATTERN_ZONA.matcher(dto.getZona().trim()).matches()) {
+            throw new ErrorNegocio("Error de formato: La letra o código de la zona no es válido (debe tener entre 1 y 3 letras).");
+        }
+
+        if (dto.getSocioPropietario() != null && !dto.getSocioPropietario().trim().isEmpty()) {
+            String dni = dto.getSocioPropietario().trim();
+            if (!PATTERN_DNI.matcher(dni).matches()) {
+                throw new ErrorNegocio("Error de formato: El DNI del socio propietario no es válido (7 a 10 dígitos numéricos).");
+            }
+            dto.setSocioPropietario(dni);
+        }
+
+        dto.setZona(dto.getZona().trim().toUpperCase());
         garageService.registrarGarage(dto);
     }
 
@@ -89,8 +107,29 @@ public class GarageController {
         if (dto == null || dto.getId() <= 0) {
             throw new IllegalArgumentException("El DTO debe incluir un ID de garaje válido.");
         }
+
         if (dto.getNumeroGarage() <= 0) {
-            throw new IllegalArgumentException("El número de garaje debe ser mayor a 0.");
+            throw new ErrorNegocio("Error de formato: El número de garaje debe ser mayor a 0.");
+        }
+
+        if (dto.getLecturaLuz() < 0.0) {
+            throw new ErrorNegocio("Error de formato: La lectura de luz no puede ser un valor negativo.");
+        }
+
+        if (dto.getZona() != null && !PATTERN_ZONA.matcher(dto.getZona().trim()).matches()) {
+            throw new ErrorNegocio("Error de formato: La letra de la zona no es válida.");
+        }
+
+        if (dto.getSocioPropietario() != null && !dto.getSocioPropietario().trim().isEmpty()) {
+            String dni = dto.getSocioPropietario().trim();
+            if (!PATTERN_DNI.matcher(dni).matches()) {
+                throw new ErrorNegocio("Error de formato: El DNI del socio propietario no es válido.");
+            }
+            dto.setSocioPropietario(dni);
+        }
+
+        if (dto.getZona() != null) {
+            dto.setZona(dto.getZona().trim().toUpperCase());
         }
 
         garageService.actualizarGarage(dto);

@@ -10,7 +10,7 @@ import mapper.SocioMapper;
 import view.impl.MenuAdminImpl;
 import view.impl.MenuEmpleadoImpl;
 import view.impl.MenuSocioImpl;
-import view.impl.MenuSuperAdminImpl; // <--- Import del menú SuperAdmin
+import view.impl.MenuSuperAdminImpl;
 import dto.UsuarioDTO;
 import dto.EmpleadoDTO;
 import dto.SocioDTO;
@@ -18,10 +18,9 @@ import exceptions.*;
 
 public class LoginController implements Controlador {
 
-    // Inyectamos servicios necesarios
-    private UsuarioService usuarioService;
-    private EmpleadoService empleadoService;
-    private SocioService socioService;
+    private final UsuarioService usuarioService;
+    private final EmpleadoService empleadoService;
+    private final SocioService socioService;
 
     public LoginController() {
         this.usuarioService = new UsuarioService();
@@ -32,13 +31,11 @@ public class LoginController implements Controlador {
     @Override
     public void login(String nombreUsuario, String claveIngresada) {
         try {
-            // Validation básica de sintaxis/formato antes de ir al Service
             if (nombreUsuario == null || nombreUsuario.isBlank() || claveIngresada == null || claveIngresada.isBlank()) {
                 System.out.println("Error: El nombre de usuario y la contraseña no pueden estar vacíos.");
                 return;
             }
 
-            // 1. Buscamos al usuario (autenticación)
             UsuarioDTO usuarioDto = usuarioService.buscarPorNombreUsuario(nombreUsuario);
 
             if (usuarioDto == null || !usuarioDto.getClave().equals(claveIngresada)) {
@@ -46,11 +43,9 @@ public class LoginController implements Controlador {
                 return;
             }
 
-            // Convertimos el DTO a Modelo
             Usuario usuarioModel = UsuarioMapper.toModel(usuarioDto);
             System.out.println("\nBienvenido, " + usuarioModel.getNombre() + "!");
 
-            // 2. Selección de flujo basada en ROL
             switch (usuarioModel.getRol()) {
                 case SUPERADMINISTRADOR:
                     SuperAdminController superCtrl = new SuperAdminController(usuarioModel);
@@ -58,8 +53,31 @@ public class LoginController implements Controlador {
                     break;
 
                 case ADMINISTRADOR:
+                    // Instanciación corregida: se pasa solo el usuario al constructor del controlador (o vacío según corresponda)
                     AdminController adminCtrl = new AdminController(usuarioModel);
-                    new MenuAdminImpl(adminCtrl,usuarioModel).mostrar();
+                    AsignacionEmpleadoZonaController asigEmpZonaCtrl = new AsignacionEmpleadoZonaController(usuarioModel);
+                    AsignacionVehiculoGarageController asigVehGarCtrl = new AsignacionVehiculoGarageController(usuarioModel);
+                    EmpleadoController empCtrlAdmin = new EmpleadoController(usuarioModel);
+                    SocioController socioCtrlAdmin = new SocioController(usuarioModel);
+                    VehiculoController vehCtrlAdmin = new VehiculoController(usuarioModel);
+
+                    // Controladores con constructores vacíos (sin servicios ni usuario por parámetro)
+                    GarageController garageCtrlAdmin = new GarageController();
+                    PropiedadGarageController propGarCtrlAdmin = new PropiedadGarageController();
+                    ZonaController zonaCtrlAdmin = new ZonaController();
+
+                    new MenuAdminImpl(
+                            adminCtrl,
+                            asigEmpZonaCtrl,
+                            asigVehGarCtrl,
+                            empCtrlAdmin,
+                            socioCtrlAdmin,
+                            vehCtrlAdmin,
+                            garageCtrlAdmin,
+                            propGarCtrlAdmin,
+                            zonaCtrlAdmin,
+                            usuarioModel
+                    ).mostrar();
                     break;
 
                 case EMPLEADO:
@@ -89,7 +107,6 @@ public class LoginController implements Controlador {
             System.out.println("Error de autenticación: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Ocurrió un error inesperado al iniciar sesión. Intente nuevamente.");
-            // Opcional: registrar en log en vez de e.printStackTrace() si no quieren ensuciar la consola de la app
         }
     }
 }

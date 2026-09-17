@@ -52,7 +52,6 @@ public class SocioController implements Controlador {
     }
 
     public void registrarSocio(SocioDTO dto) throws ErrorNegocio {
-        // 1. Validaciones de sintaxis y formato en el controlador
         if (dto == null) {
             throw new ErrorNegocio("El socio no puede ser nulo.");
         }
@@ -65,6 +64,11 @@ public class SocioController implements Controlador {
         // Validación de Nombre
         if (dto.getNombre() == null || !PATTERN_NOMBRE.matcher(dto.getNombre().trim()).matches()) {
             throw new ErrorNegocio("El nombre es obligatorio, debe tener entre 2 y 100 caracteres y contener solo letras y espacios.");
+        }
+
+        // Validación de Apellido (Añadido)
+        if (dto.getApellido() == null || !PATTERN_NOMBRE.matcher(dto.getApellido().trim()).matches()) {
+            throw new ErrorNegocio("El apellido es obligatorio, debe tener entre 2 y 100 caracteres y contener solo letras y espacios.");
         }
 
         // Validación de Dirección
@@ -92,7 +96,7 @@ public class SocioController implements Controlador {
             throw new ErrorNegocio("El rol del usuario es obligatorio.");
         }
 
-        // Validación de Fecha de Ingreso (Sintaxis / Formato temporal básico)
+        // Validación de Fecha de Ingreso
         if (dto.getFechaIngreso() == null) {
             throw new ErrorNegocio("La fecha de ingreso es obligatoria.");
         }
@@ -100,7 +104,6 @@ public class SocioController implements Controlador {
             throw new ErrorNegocio("La fecha de ingreso no puede estar en el futuro.");
         }
 
-        // 2. Delegación directa al servicio para reglas de negocio
         socioService.registrarSocio(dto);
     }
 
@@ -115,6 +118,10 @@ public class SocioController implements Controlador {
 
         if (dto.getNombre() == null || !PATTERN_NOMBRE.matcher(dto.getNombre().trim()).matches()) {
             throw new ErrorNegocio("El formato del nombre no es válido.");
+        }
+
+        if (dto.getApellido() == null || !PATTERN_NOMBRE.matcher(dto.getApellido().trim()).matches()) {
+            throw new ErrorNegocio("El formato del apellido no es válido.");
         }
 
         if (dto.getTelefono() == null || !PATTERN_TELEFONO.matcher(dto.getTelefono()).matches()) {

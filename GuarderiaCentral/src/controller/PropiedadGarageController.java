@@ -7,36 +7,52 @@ import service.PropiedadGarageService;
 import model.Usuario;
 import model.Socio;
 import model.Rol;
-import exceptions.GarageYaVendidoException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class PropiedadGarageController {
 
     private final PropiedadGarageService propiedadGarageService;
 
-    public PropiedadGarageController(PropiedadGarageService propiedadGarageService) {
-        this.propiedadGarageService = propiedadGarageService;
+    // Patrones de validación de sintaxis y formato
+    private static final Pattern PATTERN_ID = Pattern.compile("^[0-9]+$");
+
+    public PropiedadGarageController() {
+        this.propiedadGarageService = new PropiedadGarageService();
     }
 
     public void registrarPropiedad(Usuario usuarioSesion, PropiedadGarageDTO dto) throws ErrorNegocio {
         validarAdministrador(usuarioSesion);
 
         if (dto == null) {
-            throw new IllegalArgumentException("El objeto DTO no puede ser nulo.");
+            throw new ErrorNegocio("El objeto DTO no puede ser nulo.");
         }
+
         if (dto.getSocio() == null || dto.getSocio().getId() <= 0) {
-            throw new IllegalArgumentException("Debe especificar un socio válido para la asignación de propiedad.");
+            throw new ErrorNegocio("Error de formato: Debe especificar un socio válido para la asignación de propiedad.");
         }
+
         if (dto.getGarage() == null || dto.getGarage().getNumeroGarage() <= 0) {
-            throw new IllegalArgumentException("Debe especificar un garaje válido para la asignación de propiedad.");
+            throw new ErrorNegocio("Error de formato: Debe especificar un garaje válido para la asignación de propiedad.");
         }
+
+        // Validaciones de sintaxis y formato con Pattern
+        if (!PATTERN_ID.matcher(String.valueOf(dto.getSocio().getId())).matches()) {
+            throw new ErrorNegocio("Error de formato: El ID del socio debe contener exclusivamente caracteres numéricos.");
+        }
+
+        if (!PATTERN_ID.matcher(String.valueOf(dto.getGarage().getNumeroGarage())).matches()) {
+            throw new ErrorNegocio("Error de formato: El número de garaje debe contener exclusivamente caracteres numéricos.");
+        }
+
         if (dto.getFechaCompraGarage() == null) {
-            throw new IllegalArgumentException("La fecha de compra no puede ser nula.");
+            throw new ErrorNegocio("Error de formato: La fecha de compra no puede ser nula.");
         }
+
         if (dto.getFechaCompraGarage().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("La fecha de compra no puede ser una fecha futura.");
+            throw new ErrorNegocio("Error de formato: La fecha de compra no puede ser una fecha futura.");
         }
 
         propiedadGarageService.registrarPropiedad(dto);
@@ -55,8 +71,8 @@ public class PropiedadGarageController {
     public String obtenerEstadoGarageSocio(Usuario usuarioSesion, int socioId) {
         validarUsuarioAutenticado(usuarioSesion);
 
-        if (socioId <= 0) {
-            throw new IllegalArgumentException("El ID de socio proporcionado no es válido.");
+        if (socioId <= 0 || !PATTERN_ID.matcher(String.valueOf(socioId)).matches()) {
+            throw new IllegalArgumentException("Error de formato: El ID de socio proporcionado no es válido.");
         }
 
         if (usuarioSesion.getRol() == Rol.SOCIO && usuarioSesion instanceof Socio socio) {
@@ -71,8 +87,8 @@ public class PropiedadGarageController {
     public List<GarageDTO> listarPorSocio(Usuario usuarioSesion, int socioId) {
         validarUsuarioAutenticado(usuarioSesion);
 
-        if (socioId <= 0) {
-            throw new IllegalArgumentException("El ID de socio proporcionado no es válido.");
+        if (socioId <= 0 || !PATTERN_ID.matcher(String.valueOf(socioId)).matches()) {
+            throw new IllegalArgumentException("Error de formato: El ID de socio proporcionado no es válido.");
         }
 
         if (usuarioSesion.getRol() == Rol.SOCIO && usuarioSesion instanceof Socio socio) {
