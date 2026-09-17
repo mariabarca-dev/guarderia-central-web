@@ -1,9 +1,14 @@
 # Archivos compilados de Java
 *.class
 
+# Archivos de texto (base de datos local / txt)
+*.txt
+
 # Carpetas de compilación (Maven u IntelliJ)
 target/
 out/
+build/
+bin/
 
 # Archivos de configuración local de IntelliJ
 .idea/
