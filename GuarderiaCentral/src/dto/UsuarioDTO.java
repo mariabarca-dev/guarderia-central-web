@@ -16,6 +16,7 @@ public class UsuarioDTO {
     public UsuarioDTO() {
     }
 
+
     public UsuarioDTO(int id, String nombre, String direccion, String telefono, 
                       String nombreUsuario, String clave, Rol rol) {
         this.id = id;

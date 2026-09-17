@@ -10,6 +10,9 @@ public class PropiedadGarageDTO {
     private GarageDTO garage;
     private LocalDate fechaCompraGarage;
 
+    public PropiedadGarageDTO() {
+    }
+
     public PropiedadGarageDTO(SocioDTO socio, GarageDTO garage, LocalDate fechaCompraGarage) {
         this.socio = socio;
         this.garage = garage;

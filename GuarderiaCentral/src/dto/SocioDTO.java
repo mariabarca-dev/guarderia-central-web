@@ -12,6 +12,7 @@ public class SocioDTO extends UsuarioDTO {
         super();
     }
 
+
     // Constructor actualizado con el parámetro Rol
     public SocioDTO(int id, String nombre, String direccion, String telefono, 
                     String nombreUsuario, String clave, Rol rol, 

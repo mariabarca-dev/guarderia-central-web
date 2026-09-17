@@ -9,6 +9,9 @@ public class AsignacionVehiculoGarageDTO {
     private GarageDTO garage;
     private LocalDate fechaAsignacionGarage;
 
+    public AsignacionVehiculoGarageDTO() {
+    }
+
     public AsignacionVehiculoGarageDTO(VehiculoDTO vehiculo, GarageDTO garage, LocalDate fechaAsignacionGarage) {
         this.vehiculo = vehiculo;
         this.garage = garage;

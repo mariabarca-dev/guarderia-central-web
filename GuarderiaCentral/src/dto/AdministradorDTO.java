@@ -8,6 +8,8 @@ public class AdministradorDTO extends UsuarioDTO {
         super();
     }
 
+
+
     public AdministradorDTO(int id, String nombre, String direccion, 
                             String telefono, String nombreUsuario, String clave, Rol rol) {
         // Pasamos el Rol al super constructor de UsuarioDTO
