@@ -11,11 +11,9 @@ import controller.VehiculoController;
 import controller.ZonaController;
 import dto.*;
 import exceptions.ErrorNegocio;
-import exceptions.GarageYaOcupadoException;
-import exceptions.GarageYaVendidoException;
+import exceptions.RegistroNoEncontradoException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -100,11 +98,7 @@ public class MenuAdminImpl extends VistaImpl {
                     }
                     break;
                 case 4:
-                    try {
-                        ejecutarAsignacionEmpleado();
-                    } catch (ErrorNegocio ex) {
-                        Logger.getLogger(MenuAdminImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    ejecutarAsignacionEmpleado();
                     break;
                 case 5:
                     mostrarSubmenuConsultas();
@@ -125,18 +119,16 @@ public class MenuAdminImpl extends VistaImpl {
         System.out.println("2. Modificar Socio");
         System.out.println("3. Baja Socio");
         System.out.println("4. Alta Empleado");
-        System.out.println("5. Modificar Empleado");
-        System.out.println("6. Baja Empleado");
-        System.out.println("7. Alta Vehículo");
-        System.out.println("8. Modificar Vehículo");
-        System.out.println("9. Baja Vehículo");
-        System.out.println("10. Alta Garaje");
-        System.out.println("11. Modificar Garaje");
-        System.out.println("12. Baja Garaje");
-        System.out.println("13. Alta Zona");
-        System.out.println("14. Modificar Zona");
-        System.out.println("15. Baja Zona");
-        System.out.println("16. Volver");
+        System.out.println("5. Alta Vehículo");
+        System.out.println("6. Modificar Vehículo");
+        System.out.println("7. Baja Vehículo");
+        System.out.println("8. Alta Garaje");
+        System.out.println("9. Modificar Garaje");
+        System.out.println("10. Baja Garaje");
+        System.out.println("11. Alta Zona");
+        System.out.println("12. Modificar Zona");
+        System.out.println("13. Baja Zona");
+        System.out.println("14. Volver");
 
         int op = leerEntero("Seleccione qué desea gestionar");
         switch (op) {
@@ -154,43 +146,36 @@ public class MenuAdminImpl extends VistaImpl {
                 altaUsuario("empleado");
                 break;
             case 5:
-                int idEmpleado = leerNumeroPositivo("Ingrese el ID del empleado a modificar");
-                modificarUsuario(idEmpleado, "empleado");
-                break;
-            case 6:
-                eliminarUsuario("empleado");
-                break;
-            case 7:
                 altaVehiculo();
                 break;
-            case 8:
+            case 6:
                 int idVehiculo = leerNumeroPositivo("Ingrese el ID del vehículo a modificar");
                 modificarVehiculo(idVehiculo);
                 break;
-            case 9:
+            case 7:
                 eliminarVehiculo();
                 break;
-            case 10:
+            case 8:
                 altaGaraje();
                 break;
-            case 11:
-                int idGaraje = leerNumeroPositivo("Ingrese el ID del garaje a modificar");
-                modificarGarage(idGaraje);
+            case 9:
+                int numGaraje = leerNumeroPositivo("Ingrese el Número del garaje a modificar");
+                modificarGarage(numGaraje);
                 break;
-            case 12:
+            case 10:
                 eliminarGarage();
                 break;
-            case 13:
+            case 11:
                 altaZona();
                 break;
-            case 14:
-                int idZona = leerNumeroPositivo("Ingrese el ID de la zona a modificar");
-                modificarZona(idZona);
+            case 12:
+                String letraZonaMod = leerTexto("Ingrese la Letra de la zona a modificar");
+                modificarZona(letraZonaMod);
                 break;
-            case 15:
+            case 13:
                 eliminarZona();
                 break;
-            case 16:
+            case 14:
                 break;
             default:
                 System.out.println("Opción inválida.");
@@ -207,31 +192,24 @@ public class MenuAdminImpl extends VistaImpl {
             return;
         }
 
-        GarageDTO garage = null;
-        boolean garageValido = false;
+        int numeroGarage = leerNumeroPositivo("Número del Garaje");
+        GarageDTO garage;
+        try {
+            garage = garageController.buscarPorNumero(usuarioSesion, numeroGarage);
+        } catch (RegistroNoEncontradoException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
+        }
 
-        do {
-            int garageId = leerNumeroPositivo("ID del Garaje");
-            garage = garageController.buscarGaragePorId(garageId);
-
-            if (garage == null) {
-                System.out.println("Error: no existe un garaje con ese ID.");
-            } else {
-                try {
-                    if (garage.getSocioPropietario() != null) {
-                        throw new GarageYaVendidoException();
-                    }
-                    garageValido = true;
-                } catch (GarageYaVendidoException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-        } while (!garageValido);
+        if (garage.getSocioPropietario() != null) {
+            System.out.println("Error: El garaje ya posee un propietario asociado.");
+            return;
+        }
 
         try {
             LocalDate fechaCompra = leerFechaValida("Fecha de Compra (YYYY-MM-DD)", false);
             PropiedadGarageDTO prop = new PropiedadGarageDTO(socio, garage, fechaCompra);
-            propiedadGarageController.asignarPropiedadGarage(prop);
+            propiedadGarageController.registrarPropiedad(usuarioSesion, prop);
             System.out.println("Propiedad de garaje registrada correctamente.");
         } catch (ErrorNegocio e) {
             System.out.println(e.getMessage());
@@ -248,83 +226,36 @@ public class MenuAdminImpl extends VistaImpl {
             return;
         }
 
-        GarageDTO garage = null;
-        boolean garageValido = false;
+        int numeroGarage = leerNumeroPositivo("Número del Garaje a ocupar (0 para cancelar)");
+        if (numeroGarage == 0) {
+            System.out.println("Operación cancelada.");
+            return;
+        }
 
-        do {
-            int garajeId = leerNumeroPositivo("ID del Garaje a ocupar (0 para cancelar)");
-
-            if (garajeId == 0) {
-                System.out.println("Operación cancelada.");
-                return;
-            }
-
-            garage = garageController.buscarGaragePorId(garajeId);
-
-            if (garage == null) {
-                System.out.println("Error: no existe un garaje con ese ID.");
-            } else {
-                try {
-                    AsignacionVehiculoGarageDTO asignacion = asignacionVehiculoGarageController.buscarAsignacionPorGarage(garajeId);
-                    if (asignacion != null) {
-                        throw new GarageYaOcupadoException();
-                    }
-                    garageValido = true;
-                } catch (GarageYaOcupadoException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-        } while (!garageValido);
+        GarageDTO garage;
+        try {
+            garage = garageController.buscarPorNumero(usuarioSesion, numeroGarage);
+        } catch (RegistroNoEncontradoException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
+        }
 
         LocalDate fechaAsignacion = leerFechaValida("Fecha de Asignación (YYYY-MM-DD)", false);
         AsignacionVehiculoGarageDTO nuevaAsignacion = new AsignacionVehiculoGarageDTO(vehiculo, garage, fechaAsignacion);
-        asignacionVehiculoGarageController.asignarVehiculoAGarageDTO(nuevaAsignacion);
 
+        asignacionVehiculoGarageController.crearAsignacion(usuarioSesion, nuevaAsignacion);
         System.out.println("Vehículo asignado correctamente al garaje.");
     }
 
-    private void ejecutarAsignacionEmpleado() throws ErrorNegocio {
+    private void ejecutarAsignacionEmpleado() {
         System.out.println("Operación: Carga de Personal en Zona");
 
-        int empleadoId = leerNumeroPositivo("ID del Empleado");
-        EmpleadoDTO empleado = empleadoController.buscarEmpleadoPorId(empleadoId);
-        if (empleado == null) {
-            System.out.println("Error: no existe un empleado con ese ID.");
-            return;
-        }
+        String idEmpleadoStr = String.valueOf(leerNumeroPositivo("ID del Empleado"));
+        String idZonaStr = String.valueOf(leerNumeroPositivo("ID de la Zona"));
+        String cantVehiculosStr = String.valueOf(leerNumeroPositivo("Cantidad de vehículos bajo su cargo"));
 
-        int zonaId = leerNumeroPositivo("ID de la Zona");
-        ZonaDTO zona = zonaController.buscarZonaPorId(zonaId);
-        if (zona == null) {
-            System.out.println("Error: no existe una zona con ese ID.");
-            return;
-        }
-
-        int vehiculosACargo = leerNumeroPositivo("Cantidad de vehículos bajo su cargo");
-
-        List<VehiculoDTO> vehiculosEnZona = vehiculoController.listarVehiculosPorZona(zonaId);
-        int cantidadReal = (vehiculosEnZona != null) ? vehiculosEnZona.size() : 0;
-
-        if (cantidadReal < vehiculosACargo) {
-            System.out.println("Error: la zona solo tiene " + cantidadReal + " vehículos.");
-            return;
-        }
-
-        System.out.println("Vehículos disponibles en la zona:");
-        for (VehiculoDTO v : vehiculosEnZona) {
-            System.out.println("ID: " + v.getId() + " - Matrícula: " + v.getMatricula());
-        }
-
-        List<Integer> idsSeleccionados = new ArrayList<>();
-        for (int i = 0; i < vehiculosACargo; i++) {
-            int idVehiculo = leerNumeroPositivo("Ingrese ID del vehículo #" + (i + 1) + " a cargo");
-            idsSeleccionados.add(idVehiculo);
-        }
-
-        AsignacionEmpleadoZonaDTO asignacion = new AsignacionEmpleadoZonaDTO(empleado, zona, vehiculosACargo);
-        asignacionEmpleadoZonaController.asignarEmpleadoAZona(asignacion);
-
-        System.out.println("Empleado asignado correctamente a la zona.");
+        String resultado = asignacionEmpleadoZonaController.crearAsignacion(idEmpleadoStr, idZonaStr, cantVehiculosStr);
+        System.out.println(resultado);
     }
 
     private void mostrarSubmenuConsultas() {
@@ -336,7 +267,12 @@ public class MenuAdminImpl extends VistaImpl {
         int op = leerEntero("Seleccione consulta");
         switch (op) {
             case 1:
-                garageController.listarDisponibilidadGarages();
+                List<String> reporteDisponibilidad = garageController.consultarDisponibilidadGarages(usuarioSesion);
+                if (reporteDisponibilidad != null && !reporteDisponibilidad.isEmpty()) {
+                    reporteDisponibilidad.forEach(System.out.println);
+                } else {
+                    System.out.println("No se obtuvieron datos de disponibilidad.");
+                }
                 break;
             case 2:
                 int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
@@ -344,7 +280,8 @@ public class MenuAdminImpl extends VistaImpl {
                 break;
             case 3:
                 int idZonaEmp = leerNumeroPositivo("Ingrese ID de la Zona");
-                empleadoController.listarEmpleadosPorZona(idZonaEmp);
+                List<ZonaDTO> zonasEmpleado = empleadoController.listarZonasAsignadas(idZonaEmp);
+                System.out.println("Zonas asignadas al ID: " + zonasEmpleado.size());
                 break;
             default:
                 System.out.println("Opción no válida.");
@@ -354,13 +291,13 @@ public class MenuAdminImpl extends VistaImpl {
     // ---------------- OPERACIONES DE ENTIDADES (CRUD) ----------------
 
     private void altaUsuario(String tipo) {
-        String dni = leerTextoConLimite("DNI", LIMITE_DNI);
-        String nombre = leerTexto("Nombre");
-        String apellido = leerTexto("Apellido");
-        String direccion = leerTexto("Dirección");
-        String telefono = leerTextoConLimite("Teléfono", LIMITE_TELEFONO);
-
         if ("socio".equalsIgnoreCase(tipo)) {
+            String dni = leerTextoConLimite("DNI", LIMITE_DNI);
+            String nombre = leerTexto("Nombre");
+            String apellido = leerTexto("Apellido");
+            String direccion = leerTexto("Dirección");
+            String telefono = leerTextoConLimite("Teléfono", LIMITE_TELEFONO);
+
             SocioDTO dto = new SocioDTO();
             dto.setDni(dni);
             dto.setNombre(nombre);
@@ -370,16 +307,17 @@ public class MenuAdminImpl extends VistaImpl {
             socioController.registrarSocio(dto);
             System.out.println("Socio registrado con éxito.");
         } else if ("empleado".equalsIgnoreCase(tipo)) {
+            String nombre = leerTexto("Nombre");
+            String direccion = leerTexto("Dirección");
+            String telefono = leerTextoConLimite("Teléfono", LIMITE_TELEFONO);
+            String nombreUsuario = leerTexto("Nombre de Usuario");
+            String clave = leerTexto("Clave");
+            String rolStr = leerTexto("Rol (ADMINISTRADOR / EMPLEADO)");
             String codigo = leerTextoConLimite("Código de Empleado", LIMITE_CODIGO);
-            EmpleadoDTO dto = new EmpleadoDTO();
-            dto.setDni(dni);
-            dto.setNombre(nombre);
-            dto.setApellido(apellido);
-            dto.setDireccion(direccion);
-            dto.setTelefono(telefono);
-            dto.setCodigoEmpleado(codigo);
-            empleadoController.registrarEmpleado(dto);
-            System.out.println("Empleado registrado con éxito.");
+            String especialidad = leerTexto("Especialidad");
+
+            String respuesta = empleadoController.registrarEmpleado(nombre, direccion, telefono, nombreUsuario, clave, rolStr, codigo, especialidad);
+            System.out.println(respuesta);
         }
     }
 
@@ -396,18 +334,8 @@ public class MenuAdminImpl extends VistaImpl {
             socio.setTelefono(leerTextoConLimite("Nuevo Teléfono", LIMITE_TELEFONO));
             socioController.modificarSocio(socio);
             System.out.println("Socio modificado exitosamente.");
-        } else if ("empleado".equalsIgnoreCase(tipo)) {
-            EmpleadoDTO empleado = empleadoController.buscarEmpleadoPorId(id);
-            if (empleado == null) {
-                System.out.println("No existe el empleado especificado.");
-                return;
-            }
-            empleado.setNombre(leerTexto("Nuevo Nombre (actual: " + empleado.getNombre() + ")"));
-            empleado.setApellido(leerTexto("Nuevo Apellido (actual: " + empleado.getApellido() + ")"));
-            empleado.setDireccion(leerTexto("Nueva Dirección (actual: " + empleado.getDireccion() + ")"));
-            empleado.setTelefono(leerTextoConLimite("Nuevo Teléfono", LIMITE_TELEFONO));
-            empleadoController.modificarEmpleado(empleado);
-            System.out.println("Empleado modificado exitosamente.");
+        } else {
+            System.out.println("Operación no admitida para este tipo de usuario.");
         }
     }
 
@@ -416,9 +344,8 @@ public class MenuAdminImpl extends VistaImpl {
         if ("socio".equalsIgnoreCase(tipo)) {
             socioController.eliminarSocio(id);
             System.out.println("Socio eliminado con éxito.");
-        } else if ("empleado".equalsIgnoreCase(tipo)) {
-            empleadoController.eliminarEmpleado(id);
-            System.out.println("Empleado eliminado con éxito.");
+        } else {
+            System.out.println("Operación no soportada para empleados.");
         }
     }
 
@@ -462,55 +389,89 @@ public class MenuAdminImpl extends VistaImpl {
         System.out.println("Vehículo eliminado correctamente.");
     }
 
-    private void altaGaraje() {
+    private void altaGaraje() throws ErrorNegocio {
         int numero = leerNumeroPositivo("Número de Garaje");
+        double lecturaLuz = (double) leerNumeroPositivo("Lectura Inicial de Luz");
+        String zona = leerTexto("Letra de la Zona");
+
         GarageDTO dto = new GarageDTO();
-        dto.setNumero(numero);
-        garageController.registrarGarage(dto);
-        System.out.println("Garaje registrado correctamente.");
+        dto.setNumeroGarage(numero);
+        dto.setLecturaLuz(lecturaLuz);
+        dto.setZona(zona);
+
+        try {
+            garageController.registrarGarage(usuarioSesion, dto);
+            System.out.println("Garaje registrado correctamente.");
+        } catch (RegistroNoEncontradoException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
-    private void modificarGarage(int id) {
-        GarageDTO g = garageController.buscarGaragePorId(id);
-        if (g == null) {
-            System.out.println("Garaje no encontrado.");
+    private void modificarGarage(int numeroGarage) throws ErrorNegocio {
+        GarageDTO g;
+        try {
+            g = garageController.buscarPorNumero(usuarioSesion, numeroGarage);
+        } catch (RegistroNoEncontradoException e) {
+            System.out.println("Garaje no encontrado: " + e.getMessage());
             return;
         }
-        g.setNumero(leerNumeroPositivo("Nuevo Número de Garaje (actual: " + g.getNumero() + ")"));
-        garageController.modificarGarage(g);
-        System.out.println("Garaje modificado correctamente.");
+
+        int nuevoNumero = leerNumeroPositivo("Nuevo Número de Garaje (actual: " + g.getNumeroGarage() + ")");
+        g.setNumeroGarage(nuevoNumero);
+
+        try {
+            garageController.actualizarGarage(usuarioSesion, g);
+            System.out.println("Garaje modificado correctamente.");
+        } catch (RegistroNoEncontradoException e) {
+            System.out.println("Error al actualizar: " + e.getMessage());
+        }
     }
 
     private void eliminarGarage() {
-        int id = leerNumeroPositivo("ID del Garaje a eliminar");
-        garageController.eliminarGarage(id);
-        System.out.println("Garaje eliminado correctamente.");
+        int numeroGarage = leerNumeroPositivo("Número del Garaje a eliminar");
+        try {
+            garageController.eliminarGarage(usuarioSesion, numeroGarage);
+            System.out.println("Garaje eliminado correctamente.");
+        } catch (RegistroNoEncontradoException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
-    private void altaZona() {
+    private void altaZona() throws ErrorNegocio {
         String letra = leerTexto("Letra/Identificador de la Zona");
-        int capacidad = leerNumeroPositivo("Capacidad máxima de la zona");
+        String tipoVehiculo = leerTexto("Tipo de Vehículo permitido");
+        int capacidad = leerNumeroPositivo("Capacidad máxima de vehículos");
+        double ancho = (double) leerNumeroPositivo("Ancho de la zona");
+        double largo = (double) leerNumeroPositivo("Largo de la zona");
+
         ZonaDTO dto = new ZonaDTO();
         dto.setLetra(letra);
-        dto.setCapacidad(capacidad);
+        dto.setTipoVehiculo(tipoVehiculo);
+        dto.setCapacidadVehiculos(capacidad);
+        dto.setAncho(ancho);
+        dto.setLargo(largo);
+
         zonaController.registrarZona(usuarioSesion, dto);
         System.out.println("Zona registrada con éxito.");
     }
 
-    private void modificarZona(int id) {
-        ZonaDTO z = zonaController.buscarZonaPorId(id);
-        if (z == null) {
-            System.out.println("Zona no encontrada.");
+    private void modificarZona(String letra) throws ErrorNegocio {
+        ZonaDTO z;
+        try {
+            z = zonaController.buscarPorLetra(usuarioSesion, letra);
+        } catch (RegistroNoEncontradoException e) {
+            System.out.println("Zona no encontrada: " + e.getMessage());
             return;
         }
-        z.setCapacidad(leerNumeroPositivo("Nueva Capacidad (actual: " + z.getCapacidad() + ")"));
+
+        z.setCapacidadVehiculos(leerNumeroPositivo("Nueva Capacidad (actual: " + z.getCapacidadVehiculos() + ")"));
         zonaController.actualizarZona(usuarioSesion, z);
         System.out.println("Zona actualizada exitosamente.");
     }
 
-    private void eliminarZona() {
-        int id = leerNumeroPositivo("ID de la Zona a eliminar");
-        zonaController.eliminarZona(usuarioSesion, id);
+    private void eliminarZona() throws ErrorNegocio {
+        String letra = leerTexto("Letra de la Zona a eliminar");
+        zonaController.eliminarZona(usuarioSesion, letra);
         System.out.println("Zona eliminada correctamente.");
     }
 
