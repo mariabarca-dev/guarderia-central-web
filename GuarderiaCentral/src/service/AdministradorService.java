@@ -3,20 +3,19 @@ package service;
 import model.Administrador;
 import dto.AdministradorDTO;
 import dao.AdministradorDAO;
-import dao.impl.AdministradorDAOImpl; // Importación necesaria
+import dao.impl.AdministradorDAOImpl;
 import exceptions.ErrorNegocio;
 import exceptions.RegistroNoEncontradoException;
 import mapper.AdministradorMapper;
 import util.IdGenerator;
 import java.util.List;
-import java.util.stream.Collectors; // Import necesario para el stream
+import java.util.stream.Collectors;
 
 public class AdministradorService {
 
     private AdministradorDAO administradorDAO;
 
     public AdministradorService() {
-        // Inicialización directa de la implementación (acoplado, pero funcional para tu arquitectura actual)
         this.administradorDAO = new AdministradorDAOImpl();
     }
 
@@ -26,11 +25,8 @@ public class AdministradorService {
 
     /**
      * Retorna una lista de todos los administradores convertidos a DTO.
-     * Utilizado por la Vista/Menú para listar y por InicializarDataBase para verificar registros.
      */
     public List<AdministradorDTO> listarTodos() {
-        // CORREGIDO: Se usa el stream y mapper para devolver List<AdministradorDTO>
-        // en lugar de List<Administrador> (Modelo).
         return administradorDAO.listarTodos().stream()
                 .map(AdministradorMapper::toDto)
                 .collect(Collectors.toList());
@@ -51,14 +47,15 @@ public class AdministradorService {
 
         // 1. Validación de Regla de Negocio
         if (administradorDAO.existeAdministrador(dto.getNombreUsuario())) {
-               throw new ErrorNegocio("El nombre de usuario ya existe.");
+            throw new ErrorNegocio("El nombre de usuario ya existe.");
         }
 
         // 2. Generación del ID (Base 100 para administradores)
         int nuevoId = IdGenerator.obtenerNuevoId("administrador", 100);
 
-        // 3. Conversión usando el Mapper (inyectando el ID generado)
-        Administrador admin = AdministradorMapper.toModel(dto, nuevoId);
+        // 3. Asignamos el ID al DTO y convertimos con el mapper estándar (sin deprecados)
+        dto.setId(nuevoId);
+        Administrador admin = AdministradorMapper.toModel(dto);
 
         // 4. Persistencia
         administradorDAO.guardar(admin);
@@ -72,7 +69,6 @@ public class AdministradorService {
         if (admin == null) {
             throw new RegistroNoEncontradoException("No se encontró el administrador con ID: " + id);
         }
-        // Convertimos a DTO antes de devolverlo
         return AdministradorMapper.toDto(admin);
     }
 
@@ -99,8 +95,8 @@ public class AdministradorService {
             throw new RegistroNoEncontradoException("No se puede actualizar: El administrador con ID " + dto.getId() + " no existe.");
         }
 
-        // Para actualizar, convertimos el DTO (que debe traer el ID correcto) a Modelo
-        Administrador admin = AdministradorMapper.toModel(dto, dto.getId());
+        // Conversión limpia utilizando el DTO directamente (que ya incluye el ID)
+        Administrador admin = AdministradorMapper.toModel(dto);
 
         administradorDAO.actualizar(admin);
     }

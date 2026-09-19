@@ -8,15 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ZonaDAOImpl implements ZonaDAO {
-    
+
     private ArchivoZona bd;
+    private final String RUTA_ARCHIVO = "zona.txt";
 
     public ZonaDAOImpl() {
         this.bd = new ArchivoZona();
-        this.bd.inicializarBD(); // Se asegura de que SOLO su entorno esté listo
+        this.bd.inicializarBD();
     }
-    
-    private final String RUTA_ARCHIVO = "zona.txt";
 
     @Override
     public void guardar(Zona zona) {
@@ -41,7 +40,16 @@ public class ZonaDAOImpl implements ZonaDAO {
     }
 
     @Override
+    public void eliminar(Integer id) {
+        if (id == null) return;
+        List<Zona> lista = listarTodos();
+        lista.removeIf(z -> id.equals(z.getId()));
+        reescribirArchivo(lista);
+    }
+
+    @Override
     public void eliminar(String letra) {
+        if (letra == null) return;
         List<Zona> lista = listarTodos();
         lista.removeIf(z -> z.getLetra().equals(letra));
         reescribirArchivo(lista);
@@ -49,15 +57,20 @@ public class ZonaDAOImpl implements ZonaDAO {
 
     @Override
     public Zona buscarPorLetra(String letra) {
+        if (letra == null) return null;
         return listarTodos().stream()
-                .filter(z -> z.getLetra().equals(letra))
+                .filter(z -> z.getLetra() != null && z.getLetra().equalsIgnoreCase(letra.trim()))
                 .findFirst()
                 .orElse(null);
     }
-    
+
     @Override
-    public Zona buscarPorId(int id){
-        return listarTodos().stream().filter(z -> z.getId() == id).findFirst().orElse(null);
+    public Zona buscarPorId(Integer id) {
+        if (id == null) return null;
+        return listarTodos().stream()
+                .filter(z -> id.equals(z.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -69,7 +82,7 @@ public class ZonaDAOImpl implements ZonaDAO {
         try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                // Asumiendo que Zona.fromString parsea correctamente la línea
+                if (linea.trim().isEmpty()) continue;
                 lista.add(Zona.fromString(linea));
             }
         } catch (IOException e) {

@@ -1,6 +1,4 @@
-
 package mapper;
-
 
 import dto.EmpleadoDTO;
 import model.Empleado;
@@ -16,15 +14,16 @@ public class EmpleadoMapper {
         if (dto == null) return null;
 
         return new Empleado(
-            dto.getId(),
-            dto.getNombre(),
-            dto.getDireccion(),
-            dto.getTelefono(),
-            dto.getNombreUsuario(),
-            dto.getClave(),
-            dto.getRol(),       // El Rol ya fue asignado en el Service
-            dto.getCodigo(),
-            dto.getEspecialidad()
+                dto.getId(),
+                dto.getNombre(),
+                dto.getApellido(), // <--- Mapeo de apellido
+                dto.getDireccion(),
+                dto.getTelefono(),
+                dto.getNombreUsuario(),
+                dto.getClave(),
+                dto.getRol(),       // El Rol ya fue asignado en el Service
+                dto.getCodigo(),
+                dto.getEspecialidad()
         );
     }
 
@@ -35,15 +34,16 @@ public class EmpleadoMapper {
         if (model == null) return null;
 
         return new EmpleadoDTO(
-            model.getId(),
-            model.getNombre(),
-            model.getDireccion(),
-            model.getTelefono(),
-            model.getNombreUsuario(),
-            model.getClave(),
-            model.getRol(),
-            model.getCodigo(),
-            model.getEspecialidad()
+                model.getId(),
+                model.getNombre(),
+                model.getApellido(), // <--- Mapeo de apellido
+                model.getDireccion(),
+                model.getTelefono(),
+                model.getNombreUsuario(),
+                model.getClave(),
+                model.getRol(),
+                model.getCodigo(),
+                model.getEspecialidad()
         );
     }
 }

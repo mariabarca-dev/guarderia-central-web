@@ -23,15 +23,12 @@ public class Main {
             initDb.verificarConfiguracionInicial(); // Ejecutar la verificación
             System.out.println("Base de datos inicializada correctamente con usuarios por defecto.");
 
-        } catch (ErrorNegocio e) {
-            System.err.println("Error de negocio al inicializar la base de datos: " + e.getMessage());
-            e.printStackTrace();
-            return; // Salir si la inicialización falla por lógica de negocio
         } catch (Exception e) {
             System.err.println("Error inesperado al inicializar la base de datos: " + e.getMessage());
             e.printStackTrace();
             return; // Salir si la inicialización falla por error técnico
         }
+
         while(true){
             MenuLoginImpl loginView = new MenuLoginImpl();
             // El login llama a los otros menús internamente

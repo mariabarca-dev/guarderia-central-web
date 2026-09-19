@@ -4,7 +4,9 @@ import controller.LoginController;
 // Se eliminan las importaciones de UsuarioService y CredencialesInvalidasException
 // ya que la vista ya no las maneja directamente
 
-public class MenuLoginImpl extends VistaImpl {
+import view.MenuLogin;
+
+public class MenuLoginImpl extends VistaImpl implements MenuLogin {
 
     // Se elimina la instancia de UsuarioService
     @Override

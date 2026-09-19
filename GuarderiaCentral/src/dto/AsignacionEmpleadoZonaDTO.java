@@ -2,13 +2,13 @@
 package dto;
 
 
-
-
-
 public class AsignacionEmpleadoZonaDTO {
     private EmpleadoDTO empleado;
     private ZonaDTO zona;
     private int cantVehiculosACargo;
+
+   public AsignacionEmpleadoZonaDTO(){
+   }
 
     public AsignacionEmpleadoZonaDTO(EmpleadoDTO empleado, ZonaDTO zona, int cantVehiculosACargo) {
         this.empleado = empleado;

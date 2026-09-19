@@ -14,6 +14,31 @@ public class Vehiculo {
     private float profundidad;
     private float ancho;
 
+    public Vehiculo(){
+        
+    }
+
+    public Vehiculo(int socioId, int empleadoId, String nombre, String matricula, TipoVehiculo tipo, float profundidad, float ancho) {
+        // Validaciones de integridad numérica
+        if (socioId < 0) throw new IllegalArgumentException("El ID del socio no puede ser negativo.");
+        if (empleadoId < 0) throw new IllegalArgumentException("El ID del empleado responsable no puede ser negativo."); // <--- CAMBIO 1: Validación nueva
+        if (profundidad <= 0) throw new IllegalArgumentException("La profundidad debe ser un valor positivo.");
+        if (ancho <= 0) throw new IllegalArgumentException("El ancho debe ser un valor positivo.");
+
+        // Validación de cadenas y objetos
+        if (matricula == null || matricula.isEmpty()) throw new IllegalArgumentException("La matrícula no puede estar vacía.");
+        if (tipo == null) throw new IllegalArgumentException("El tipo de vehículo es obligatorio.");
+
+        this.socioId = socioId;
+        this.empleadoId = empleadoId; // <--- CAMBIO 1: Asignación nueva
+        this.nombre = nombre;
+        this.matricula = matricula;
+        this.tipo = tipo;
+        this.profundidad = profundidad;
+        this.ancho = ancho;
+    }
+
+
     /**
      * Constructor con validaciones defensivas.
      * Actualizado para incluir empleadoId.

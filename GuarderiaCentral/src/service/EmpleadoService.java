@@ -1,5 +1,6 @@
 package service;
 
+import exceptions.CodigoEmpleadoDuplicadoException;
 import model.Empleado;
 import dto.EmpleadoDTO;
 import mapper.EmpleadoMapper;
@@ -19,6 +20,8 @@ import util.IdGenerator;
 public class EmpleadoService {
 
     private EmpleadoDAO empleadoDAO;
+    //private final EmpleadoService empleadoService = new EmpleadoService();
+
 
     public EmpleadoService() {
         // Inyección de dependencia directa (podría mejorarse con un framework)
@@ -40,7 +43,7 @@ public class EmpleadoService {
         // Regla de Negocio: Validación de Código único
         // Se asume que el DAO implementa este método para buscar en la base de datos/archivo.
         if (empleadoDAO.buscarPorCodigo(dto.getCodigo()) != null) {
-            throw new ErrorNegocio("Error: Ya existe un empleado registrado con el código: " + dto.getCodigo());
+            throw new CodigoEmpleadoDuplicadoException("Error: Ya existe un empleado registrado con el código: " + dto.getCodigo());
         }
 
         // Generar ID único para la nueva entidad.
@@ -99,5 +102,16 @@ public class EmpleadoService {
         
         // Ejecutamos la eliminación en el DAO.
         empleadoDAO.eliminar(id);
+    }
+
+    //ESTO VA EN EmpleadoService
+    public EmpleadoDTO buscarEmpleadoPorId(int idEmpleado) {
+        List<EmpleadoDTO> empleados = listarTodos();
+        for (EmpleadoDTO e : empleados) {
+            if (e.getId() == idEmpleado) {
+                return e;
+            }
+        }
+        return null; // No encontrado
     }
 }

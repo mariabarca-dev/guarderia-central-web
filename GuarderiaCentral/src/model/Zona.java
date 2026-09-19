@@ -11,10 +11,9 @@ public class Zona {
     private float anchoGarage;
     private float largoGarage;
 
-    
+    //constructor vacío
     public Zona() {
     }
-
     
     /**
      * Constructor con validación de datos.
@@ -28,7 +27,21 @@ public class Zona {
         if (tipoVehiculo == null) throw new IllegalArgumentException("El tipo de vehículo para la zona es obligatorio.");
 
         this.id = id;
-        this.letra = letra;
+        this.letra = (letra != null) ? letra.trim().toUpperCase() : null; // para que se guarde en mayúscula
+        this.tipoVehiculo = tipoVehiculo;
+        this.capacidadVehiculos = capacidadVehiculos;
+        this.anchoGarage = anchoGarage;
+        this.largoGarage = largoGarage;
+    }
+    //constructor sin ID
+    public Zona(String letra, TipoVehiculo tipoVehiculo, int capacidadVehiculos, float anchoGarage, float largoGarage) {
+        // Validaciones defensivas
+        if (capacidadVehiculos < 0) throw new IllegalArgumentException("La capacidad no puede ser negativa.");
+        if (anchoGarage <= 0) throw new IllegalArgumentException("El ancho del garage debe ser mayor a 0.");
+        if (largoGarage <= 0) throw new IllegalArgumentException("El largo del garage debe ser mayor a 0.");
+        if (tipoVehiculo == null) throw new IllegalArgumentException("El tipo de vehículo para la zona es obligatorio.");
+
+        this.letra = (letra != null) ? letra.trim().toUpperCase() : null;// para que se guarde en mayúscula
         this.tipoVehiculo = tipoVehiculo;
         this.capacidadVehiculos = capacidadVehiculos;
         this.anchoGarage = anchoGarage;

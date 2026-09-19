@@ -8,20 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+public class VehiculoDAOImpl implements VehiculoDAO {
 
-public class VehiculoDAOImpl implements VehiculoDAO{
-    
     private ArchivoVehiculo bd;
+    private final String RUTA_ARCHIVO = "vehiculo.txt";
 
     public VehiculoDAOImpl() {
         this.bd = new ArchivoVehiculo();
-        // Nota: ArchivoVehiculo.inicializarBD() suele crear el archivo si no existe.
-        this.bd.inicializarBD(); 
+        this.bd.inicializarBD();
     }
-    
-    // CORRECCIÓN: Ajustamos la ruta para que coincida con la estándar del sistema 
-    // (normalmente singular sin 's', ej: empleado.txt, vehiculo.txt)
-    private final String RUTA_ARCHIVO = "vehiculo.txt";
 
     @Override
     public void guardar(Vehiculo vehiculo) {
@@ -37,7 +32,6 @@ public class VehiculoDAOImpl implements VehiculoDAO{
     public void actualizar(Vehiculo vehiculo) {
         List<Vehiculo> lista = listarTodos();
         for (int i = 0; i < lista.size(); i++) {
-            // Asumimos que la matrícula es el identificador único de negocio
             if (lista.get(i).getMatricula().equals(vehiculo.getMatricula())) {
                 lista.set(i, vehiculo);
                 break;
@@ -47,35 +41,41 @@ public class VehiculoDAOImpl implements VehiculoDAO{
     }
 
     @Override
+    public void eliminar(Integer id) {
+        if (id == null) return;
+        List<Vehiculo> lista = listarTodos();
+        lista.removeIf(v -> id.equals(v.getId()));
+        reescribirArchivo(lista); // Guarda los cambios en el archivo .txt
+    }
+
+    @Override
     public void eliminar(String matricula) {
+        if (matricula == null) return;
         List<Vehiculo> lista = listarTodos();
         lista.removeIf(v -> v.getMatricula().equals(matricula));
         reescribirArchivo(lista);
     }
 
     @Override
-    public Vehiculo buscarPorId(int id) {
+    public Vehiculo buscarPorId(Integer id) {
+        if (id == null) return null;
         return listarTodos().stream()
-                .filter(v -> v.getId() == id)
+                .filter(v -> id.equals(v.getId()))
                 .findFirst()
                 .orElse(null);
     }
-    
+
     @Override
     public Vehiculo buscarPorMatricula(String matricula) {
+        if (matricula == null) return null;
         return listarTodos().stream()
                 .filter(v -> v.getMatricula().equals(matricula))
                 .findFirst()
                 .orElse(null);
     }
 
-    /**
-     * --- CAMBIO 1: MÉTODO NUEVO PARA EL MENÚ EMPLEADO ---
-     * Busca todos los vehículos asignados a un empleado específico.
-     */
     @Override
     public List<Vehiculo> buscarPorEmpleado(int empleadoId) {
-        // Filtramos la lista completa usando el nuevo campo empleadoId
         return listarTodos().stream()
                 .filter(v -> v.getEmpleadoId() == empleadoId)
                 .collect(Collectors.toList());
@@ -90,7 +90,7 @@ public class VehiculoDAOImpl implements VehiculoDAO{
         try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                if (linea.trim().isEmpty()) continue; // Evitar líneas vacías
+                if (linea.trim().isEmpty()) continue;
                 lista.add(Vehiculo.fromString(linea));
             }
         } catch (IOException e) {
@@ -100,7 +100,6 @@ public class VehiculoDAOImpl implements VehiculoDAO{
     }
 
     private void reescribirArchivo(List<Vehiculo> lista) {
-        // Sobrescribe el archivo completamente con la lista actualizada
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO))) {
             for (Vehiculo v : lista) {
                 bw.write(v.toCsv());

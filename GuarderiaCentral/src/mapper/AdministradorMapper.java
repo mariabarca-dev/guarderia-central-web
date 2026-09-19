@@ -7,60 +7,38 @@ import dto.AdministradorDTO;
 public class AdministradorMapper {
 
     /**
-     * Convierte un AdministradorDTO a un modelo Administrador.
-     * Asume que el ID ya ha sido asignado al DTO por la capa de Servicio.
-     * @param dto El objeto AdministradorDTO origen.
-     * @return Un nuevo objeto Administrador con los datos del DTO.
+     * Convierte un AdministradorDTO a su modelo de dominio Administrador.
      */
-    public static Administrador toModel(AdministradorDTO dto) { // <--- Firma simplificada (sin el int id externo)
+    public static Administrador toModel(AdministradorDTO dto) {
         if (dto == null) return null;
 
         return new Administrador(
-            dto.getId(), // <--- Obtenemos el ID directamente del DTO
-            dto.getNombre(),
-            dto.getDireccion(),
-            dto.getTelefono(),
-            dto.getNombreUsuario(),
-            dto.getClave(),
-            Rol.ADMINISTRADOR // Rol fijo por seguridad
+                dto.getId(),
+                dto.getNombre(),
+                dto.getApellido(), // <--- Atributo mapeado
+                dto.getDireccion(),
+                dto.getTelefono(),
+                dto.getNombreUsuario(),
+                dto.getClave(),
+                Rol.ADMINISTRADOR
         );
     }
 
     /**
-     * Versión sobrecargada para retrocompatibilidad o casos excepcionales.
-     * @deprecated Se prefiere usar toModel(AdministradorDTO).
-     */
-    @Deprecated
-    public static Administrador toModel(AdministradorDTO dto, int id) {
-        if (dto == null) return null;
-        // Si se usa este método, fuerza el ID pasado por parámetro
-        return new Administrador(
-            id,
-            dto.getNombre(),
-            dto.getDireccion(),
-            dto.getTelefono(),
-            dto.getNombreUsuario(),
-            dto.getClave(),
-            Rol.ADMINISTRADOR
-        );
-    }
-
-    /**
-     * Convierte un modelo Administrador a un AdministradorDTO.
-     * @param model El objeto Administrador modelo origen.
-     * @return Un nuevo AdministradorDTO con los datos del modelo.
+     * Convierte un modelo de dominio Administrador a AdministradorDTO.
      */
     public static AdministradorDTO toDto(Administrador model) {
         if (model == null) return null;
 
         return new AdministradorDTO(
-            model.getId(),
-            model.getNombre(),
-            model.getDireccion(),
-            model.getTelefono(),
-            model.getNombreUsuario(),
-            model.getClave(),
-            model.getRol()
+                model.getId(),
+                model.getNombre(),
+                model.getApellido(), // <--- Atributo mapeado
+                model.getDireccion(),
+                model.getTelefono(),
+                model.getNombreUsuario(),
+                model.getClave(),
+                model.getRol()
         );
     }
 }

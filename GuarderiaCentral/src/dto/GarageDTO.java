@@ -12,6 +12,16 @@ public class GarageDTO {
     private LocalDate fechaCompra;
     private String zona;
 
+    /**
+     * Constructor vacío necesario para instanciación paso a paso mediante setters.
+     */
+    public GarageDTO() {
+    }
+
+
+    /**
+     * Constructor completo con todos los atributos.
+     */
     public GarageDTO(int id, int numeroGarage, float lecturaLuz, boolean servicioMantenimiento, String socioPropietario, LocalDate fechaCompra, String zona) {
         this.id = id;
         this.numeroGarage = numeroGarage;
@@ -19,9 +29,10 @@ public class GarageDTO {
         this.servicioMantenimiento = servicioMantenimiento;
         this.socioPropietario = socioPropietario;
         this.fechaCompra = fechaCompra;
-        this.zona = zona; // <--- Asignación del nuevo atributo
+        this.zona = zona;
     }
 
+    // --- GETTERS ---
     public int getId() {
         return id;
     }
@@ -50,6 +61,16 @@ public class GarageDTO {
         return zona;
     }
 
+    // --- ALIAS DE COMPATIBILIDAD CON LA VISTA ---
+    public int getNumero() {
+        return numeroGarage;
+    }
+
+    public void setNumero(int numero) {
+        this.numeroGarage = numero;
+    }
+
+    // --- SETTERS ---
     public void setId(int id) {
         this.id = id;
     }
@@ -77,5 +98,4 @@ public class GarageDTO {
     public void setZona(String zona) {
         this.zona = zona;
     }
-
 }

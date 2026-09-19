@@ -1,21 +1,23 @@
-
 package view.impl;
-
-
 
 import controller.SocioController;
 import dto.SocioDTO;
 import dto.VehiculoDTO;
 import dto.GarageDTO;
+import model.Usuario; // <- Importante
 import java.util.List;
+import view.MenuSocio;
 
-public class MenuSocioImpl extends VistaImpl {
+
+public class MenuSocioImpl extends VistaImpl implements MenuSocio {
     private final SocioController socioController;
     private final SocioDTO socioLogueado;
+    private final Usuario usuarioSesion; // <- Guardamos la sesión
 
-    public MenuSocioImpl(SocioController socioController, SocioDTO socio) {
+    public MenuSocioImpl(SocioController socioController, SocioDTO socio, Usuario usuarioSesion) {
         this.socioController = socioController;
         this.socioLogueado = socio;
+        this.usuarioSesion = usuarioSesion;
     }
 
     @Override
@@ -33,8 +35,8 @@ public class MenuSocioImpl extends VistaImpl {
 
             switch (opcion) {
                 case 1:
-                    // Mostrar datos personales
-                    SocioDTO datos = socioController.buscarSocioPorId(socioLogueado.getId());
+                    // CORRECCIÓN: Pasamos el usuarioSesion como primer parámetro
+                    SocioDTO datos = socioController.buscarSocioPorId(this.usuarioSesion, socioLogueado.getId());
                     if (datos != null) {
                         System.out.println("--- Datos Personales ---");
                         System.out.println("Nombre: " + datos.getNombre());
@@ -49,8 +51,8 @@ public class MenuSocioImpl extends VistaImpl {
                     break;
 
                 case 2:
-                    // Listar vehículos del socio
-                    List<VehiculoDTO> vehiculos = socioController.listarVehiculosPorSocio(socioLogueado.getId());
+                    // CORRECCIÓN: Pasamos el usuarioSesion como primer parámetro
+                    List<VehiculoDTO> vehiculos = socioController.listarVehiculosPorSocio(this.usuarioSesion, socioLogueado.getId());
                     if (vehiculos.isEmpty()) {
                         System.out.println("No tiene vehículos registrados.");
                     } else {
@@ -62,8 +64,8 @@ public class MenuSocioImpl extends VistaImpl {
                     break;
 
                 case 3:
-                    // Listar garajes del socio
-                    List<GarageDTO> garajes = socioController.listarGarajesPorSocio(socioLogueado.getId());
+                    // CORRECCIÓN: Pasamos el usuarioSesion como primer parámetro
+                    List<GarageDTO> garajes = socioController.listarGarajesPorSocio(this.usuarioSesion, socioLogueado.getId());
                     if (garajes.isEmpty()) {
                         System.out.println("No tiene garajes comprados o alquilados.");
                     } else {
@@ -85,4 +87,3 @@ public class MenuSocioImpl extends VistaImpl {
         }
     }
 }
-

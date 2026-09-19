@@ -10,17 +10,17 @@ import mapper.SocioMapper;
 import view.impl.MenuAdminImpl;
 import view.impl.MenuEmpleadoImpl;
 import view.impl.MenuSocioImpl;
-import view.impl.MenuSuperAdminImpl; // <--- Import del menú SuperAdmin
+import view.impl.MenuSysAdminImpl;
 import dto.UsuarioDTO;
 import dto.EmpleadoDTO;
 import dto.SocioDTO;
+import exceptions.*;
 
 public class LoginController implements Controlador {
 
-    // Inyectamos servicios necesarios
-    private UsuarioService usuarioService;
-    private EmpleadoService empleadoService;
-    private SocioService socioService;
+    private final UsuarioService usuarioService;
+    private final EmpleadoService empleadoService;
+    private final SocioService socioService;
 
     public LoginController() {
         this.usuarioService = new UsuarioService();
@@ -31,7 +31,11 @@ public class LoginController implements Controlador {
     @Override
     public void login(String nombreUsuario, String claveIngresada) {
         try {
-            // 1. Buscamos al usuario (autenticación) y obtenemos el DTO
+            if (nombreUsuario == null || nombreUsuario.isBlank() || claveIngresada == null || claveIngresada.isBlank()) {
+                System.out.println("Error: El nombre de usuario y la contraseña no pueden estar vacíos.");
+                return;
+            }
+
             UsuarioDTO usuarioDto = usuarioService.buscarPorNombreUsuario(nombreUsuario);
 
             if (usuarioDto == null || !usuarioDto.getClave().equals(claveIngresada)) {
@@ -39,37 +43,63 @@ public class LoginController implements Controlador {
                 return;
             }
 
-            // Convertimos el DTO a Modelo para usarlo en la lógica del controlador y RBAC
             Usuario usuarioModel = UsuarioMapper.toModel(usuarioDto);
+            System.out.println("\nBienvenido, " + usuarioModel.getNombre() + "!");
 
-            System.out.println("Bienvenido, " + usuarioModel.getNombre());
-
-            // 2. Selección de flujo basada en ROL
             switch (usuarioModel.getRol()) {
-                case SUPERADMINISTRADOR:
-                    SuperAdminController superCtrl = new SuperAdminController(usuarioModel);
-                    new MenuSuperAdminImpl(superCtrl).mostrar();
+                case SYS_ADMIN:
+                    // Inyectamos los controladores por entidad que requiere el menú de Super Administrador
+                    AdminController adminCtrlSys = new AdminController();
+                    EmpleadoController empCtrlSys = new EmpleadoController();
+                    SocioController socioCtrlSys = new SocioController();
+
+                    new MenuSysAdminImpl(
+                            adminCtrlSys,
+                            empCtrlSys,
+                            socioCtrlSys,
+                            usuarioModel
+                    ).mostrar();
                     break;
 
                 case ADMINISTRADOR:
-                    AdminController adminCtrl = new AdminController(usuarioModel);
-                    new MenuAdminImpl(adminCtrl).mostrar();
+                    AdminController adminCtrl = new AdminController();
+                    AsignacionEmpleadoZonaController asigEmpZonaCtrl = new AsignacionEmpleadoZonaController();
+                    AsignacionVehiculoGarageController asigVehGarCtrl = new AsignacionVehiculoGarageController();
+                    EmpleadoController empCtrlAdmin = new EmpleadoController();
+                    SocioController socioCtrlAdmin = new SocioController();
+                    VehiculoController vehCtrlAdmin = new VehiculoController();
+                    GarageController garageCtrlAdmin = new GarageController();
+                    PropiedadGarageController propGarCtrlAdmin = new PropiedadGarageController();
+                    ZonaController zonaCtrlAdmin = new ZonaController();
+
+                    new MenuAdminImpl(
+                            adminCtrl,
+                            asigEmpZonaCtrl,
+                            asigVehGarCtrl,
+                            empCtrlAdmin,
+                            socioCtrlAdmin,
+                            vehCtrlAdmin,
+                            garageCtrlAdmin,
+                            propGarCtrlAdmin,
+                            zonaCtrlAdmin,
+                            usuarioModel
+                    ).mostrar();
                     break;
 
                 case EMPLEADO:
                     model.Empleado empleadoModelo = (model.Empleado) usuarioModel;
                     EmpleadoDTO empDto = EmpleadoMapper.toDto(empleadoModelo);
 
-                    EmpleadoController empCtrl = new EmpleadoController(usuarioModel);
-                    new MenuEmpleadoImpl(empCtrl, empDto).mostrar();
+                    EmpleadoController empCtrl = new EmpleadoController();
+                    new MenuEmpleadoImpl(empCtrl, empDto, usuarioModel).mostrar();
                     break;
 
                 case SOCIO:
                     model.Socio socioModelo = (model.Socio) usuarioModel;
                     SocioDTO socioDto = SocioMapper.toDto(socioModelo);
 
-                    SocioController socioCtrl = new SocioController(usuarioModel);
-                    new MenuSocioImpl(socioCtrl, socioDto).mostrar();
+                    SocioController socioCtrl = new SocioController();
+                    new MenuSocioImpl(socioCtrl, socioDto, usuarioModel).mostrar();
                     break;
 
                 default:
@@ -79,9 +109,10 @@ public class LoginController implements Controlador {
 
         } catch (SecurityException e) {
             System.out.println("Acceso denegado: " + e.getMessage());
+        } catch (ErrorNegocio e) {
+            System.out.println("Error de autenticación: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Ocurrió un error al iniciar sesión: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("Ocurrió un error inesperado al iniciar sesión. Intente nuevamente.");
         }
     }
 }
