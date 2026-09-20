@@ -3,7 +3,7 @@ package service;
 import model.Usuario;
 import model.Rol;
 import dto.UsuarioDTO;
-import mapper.UsuarioMapper; // Usamos el mapper genérico
+import mapper.UsuarioMapper;
 import dao.UsuarioDAO;
 import dao.impl.UsuarioDAOImpl;
 import exceptions.CredencialesInvalidasException;
@@ -27,7 +27,7 @@ public class UsuarioService {
         Usuario u = usuarioDAO.buscarPorNombreUsuario(nombreUsuario);
 
         if (u == null || !u.getClave().equals(clave)) {
-            throw new CredencialesInvalidasException("Error: Usuario o contraseña incorrectos.");
+            throw new CredencialesInvalidasException("Usuario o contraseña incorrectos.");
         }
 
         return u;
@@ -64,7 +64,7 @@ public class UsuarioService {
      */
     public List<UsuarioDTO> listarTodos() {
         return usuarioDAO.listarTodos().stream()
-                .map(UsuarioMapper::toDto) // Usamos el mapper para la conversión
+                .map(UsuarioMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -79,5 +79,4 @@ public class UsuarioService {
         }
         usuarioDAO.eliminar(id);
     }
-
 }

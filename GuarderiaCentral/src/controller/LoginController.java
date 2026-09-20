@@ -36,19 +36,13 @@ public class LoginController implements Controlador {
                 return;
             }
 
-            UsuarioDTO usuarioDto = usuarioService.buscarPorNombreUsuario(nombreUsuario);
+            // Validar login utilizando el servicio y lanzando CredencialesInvalidasException si falla
+            Usuario usuarioModel = usuarioService.validarLogin(nombreUsuario, claveIngresada);
 
-            if (usuarioDto == null || !usuarioDto.getClave().equals(claveIngresada)) {
-                System.out.println("Error: Usuario o clave incorrectos.");
-                return;
-            }
-
-            Usuario usuarioModel = UsuarioMapper.toModel(usuarioDto);
             System.out.println("\nBienvenido, " + usuarioModel.getNombre() + "!");
 
             switch (usuarioModel.getRol()) {
                 case SYS_ADMIN:
-                    // Inyectamos los controladores por entidad que requiere el menú de Super Administrador
                     AdminController adminCtrlSys = new AdminController();
                     EmpleadoController empCtrlSys = new EmpleadoController();
                     SocioController socioCtrlSys = new SocioController();
@@ -107,10 +101,12 @@ public class LoginController implements Controlador {
                     break;
             }
 
+        } catch (CredencialesInvalidasException e) {
+            System.out.println("Error de autenticación: " + e.getMessage());
         } catch (SecurityException e) {
             System.out.println("Acceso denegado: " + e.getMessage());
         } catch (ErrorNegocio e) {
-            System.out.println("Error de autenticación: " + e.getMessage());
+            System.out.println("Error de negocio: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Ocurrió un error inesperado al iniciar sesión. Intente nuevamente.");
         }
