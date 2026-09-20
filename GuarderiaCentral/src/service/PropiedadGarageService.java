@@ -55,6 +55,13 @@ public class PropiedadGarageService {
         }
 
         dao.guardar(nuevaPropiedad);
+
+        // CORRECCIÓN: Actualizar el estado del garaje en su archivo para reflejar el socio propietario
+        Garage garageVendido = new Garage(
+                garage.getId(), garage.getNumeroGarage(), garage.getLecturaLuz(),
+                garage.isServicioMantenimiento(), socio,
+                nuevaPropiedad.getFechaCompraGarage(), garage.getZona());
+        garageDAO.actualizar(garageVendido);
     }
 
     public Garage buscarGaragePorSocioId(int socioId) {

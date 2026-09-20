@@ -17,23 +17,20 @@ import model.Empleado;
 import model.Zona;
 
 public class AsignacionEmpleadoZonaDAOImpl implements AsignacionEmpleadoZonaDAO {
-    
+
     private ArchivoAsignacionEmpleadoZona bd;
+    private final String RUTA_ARCHIVO = "asignacionEmpleadoZona.txt";
+    private EmpleadoDAO empleadoDAO = (EmpleadoDAO) new EmpleadoDAOImpl();
+    private ZonaDAO zonaDAO = (ZonaDAO) new ZonaDAOImpl();
 
     public AsignacionEmpleadoZonaDAOImpl() {
         this.bd = new ArchivoAsignacionEmpleadoZona();
         this.bd.inicializarBD(); // Se asegura de que SOLO su entorno esté listo
     }
 
-    private final String RUTA_ARCHIVO = "asignacionEmpleadoZona.txt";
-    private EmpleadoDAO empleadoDAO = (EmpleadoDAO) new EmpleadoDAOImpl();
-    private ZonaDAO zonaDAO = (ZonaDAO) new ZonaDAOImpl();
-
-@Override
+    @Override
     public void guardar(AsignacionEmpleadoZona asignacion) {
-        
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO, true))) {
-            // CAMBIO: Ahora el DAO no sabe cómo se forma el string, solo le pide al objeto que lo haga
             bw.write(asignacion.toCsv());
             bw.newLine();
         } catch (IOException e) {
@@ -45,7 +42,7 @@ public class AsignacionEmpleadoZonaDAOImpl implements AsignacionEmpleadoZonaDAO 
     public void modificar(AsignacionEmpleadoZona asignacion) {
         List<AsignacionEmpleadoZona> lista = listarTodas();
         boolean encontrado = false;
-        
+
         for (int i = 0; i < lista.size(); i++) {
             AsignacionEmpleadoZona a = lista.get(i);
             if(a.getEmpleado().getCodigo().equals(asignacion.getEmpleado().getCodigo()) && a.getZona().getId() == asignacion.getZona().getId()){
@@ -62,18 +59,16 @@ public class AsignacionEmpleadoZonaDAOImpl implements AsignacionEmpleadoZonaDAO 
     @Override
     public void eliminar(String codigoEmpleado, int zonaId) {
         List<AsignacionEmpleadoZona> lista = listarTodas();
-        
+
         boolean removido = lista.removeIf(a -> a.getEmpleado().getCodigo().equals(codigoEmpleado) && a.getZona().getId() == zonaId);
         if(removido){
             reescribirArchivo(lista);
         }
     }
-    
-   private void reescribirArchivo(List<AsignacionEmpleadoZona> lista) {
-       
+
+    private void reescribirArchivo(List<AsignacionEmpleadoZona> lista) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(RUTA_ARCHIVO))) {
             for (AsignacionEmpleadoZona a : lista) {
-                // CAMBIO: Usamos el método unificado toCsv()
                 bw.write(a.toCsv());
                 bw.newLine();
             }
@@ -93,10 +88,16 @@ public class AsignacionEmpleadoZonaDAOImpl implements AsignacionEmpleadoZonaDAO 
         try (BufferedReader br = new BufferedReader(new FileReader(RUTA_ARCHIVO))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                String[] datos = linea.split(",");
-                Empleado e = empleadoDAO.buscarPorCodigo(datos[0]);
-                Zona z = zonaDAO.buscarPorId(Integer.parseInt(datos[1]));
-                lista.add(new AsignacionEmpleadoZona(e, z, Integer.parseInt(datos[2])));
+                if (linea.trim().isEmpty()) continue;
+                try {
+                    String[] datos = linea.split(",");
+                    Empleado e = empleadoDAO.buscarPorId(Integer.parseInt(datos[0].trim()));
+                    Zona z = zonaDAO.buscarPorId(Integer.parseInt(datos[1].trim()));
+                    if (e == null || z == null) continue;
+                    lista.add(new AsignacionEmpleadoZona(e, z, Integer.parseInt(datos[2].trim())));
+                } catch (RuntimeException ex) {
+                    System.err.println("Línea inválida (se omite): " + linea);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -125,6 +126,4 @@ public class AsignacionEmpleadoZonaDAOImpl implements AsignacionEmpleadoZonaDAO 
         }
         return total;
     }
-
 }
-
