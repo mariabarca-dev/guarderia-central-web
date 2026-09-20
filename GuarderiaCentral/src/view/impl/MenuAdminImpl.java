@@ -270,7 +270,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
         int socioId = leerNumeroPositivo("ID del Socio propietario");
         String matricula = leerTexto("Matrícula");
         String nombre = leerTexto("Nombre / Marca");
-        String tipo = leerTexto("Tipo / Modelo");
+        String tipo = leerTexto("Tipo / Modelo (ej. MOTORHOME, CASA_RODANTE, CARAVANA, TRAILER)");
         float profundidad = (float) leerNumeroPositivo("Profundidad del vehículo");
         float ancho = (float) leerNumeroPositivo("Ancho del vehículo");
 
@@ -280,6 +280,8 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
             System.out.println("Vehículo registrado correctamente.");
         } catch (ErrorNegocio ex) {
             System.out.println("Error al registrar vehículo: " + ex.getMessage());
+        } catch (Exception ex) {
+            System.out.println("Error inesperado al registrar vehículo: " + ex.getMessage());
         }
     }
 
@@ -295,15 +297,19 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
             String nuevaMatricula = leerTexto("Nueva Matrícula (actual: " + v.getMatricula() + ")");
             String nuevoNombre = leerTexto("Nuevo Nombre/Marca (actual: " + v.getNombre() + ")");
             String nuevoTipo = leerTexto("Nuevo Tipo/Modelo (actual: " + v.getTipo() + ")");
+            float nuevaProfundidad = (float) leerNumeroPositivo("Nueva Profundidad (actual: " + v.getProfundidad() + ")");
+            float nuevoAncho = (float) leerNumeroPositivo("Nuevo Ancho (actual: " + v.getAncho() + ")");
 
             VehiculoDTO vActualizado = new VehiculoDTO(
-                    v.getId(), nuevoSocioId, v.getEmpleadoId(), nuevoNombre, nuevaMatricula, nuevoTipo, v.getProfundidad(), v.getAncho()
+                    v.getId(), nuevoSocioId, v.getEmpleadoId(), nuevoNombre, nuevaMatricula, nuevoTipo, nuevaProfundidad, nuevoAncho
             );
             vehiculoController.modificarVehiculo(usuarioSesion, vActualizado);
             System.out.println("Vehículo modificado con éxito.");
 
         } catch (ErrorNegocio ex) {
             System.out.println("Error al modificar vehículo: " + ex.getMessage());
+        } catch (Exception ex) {
+            System.out.println("Error inesperado al modificar vehículo: " + ex.getMessage());
         }
     }
 
@@ -380,7 +386,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     private void altaZona() {
         System.out.println("\n--- Alta de Zona ---");
         String letra = leerTexto("Letra/Identificador de la Zona");
-        String tipoVehiculo = leerTexto("Tipo de Vehículo permitido");
+        String tipoVehiculo = leerTexto("Tipo de Vehículo permitido (ej. MOTORHOME, CASA_RODANTE, CARAVANA, TRAILER)");
         int capacidad = leerNumeroPositivo("Capacidad máxima de vehículos");
         float ancho = (float) leerNumeroPositivo("Ancho de la zona");
         float largo = (float) leerNumeroPositivo("Largo de la zona");
@@ -391,6 +397,8 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
             System.out.println("Zona registrada con éxito.");
         } catch (ErrorNegocio e) {
             System.out.println("Error al registrar zona: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error inesperado al registrar zona: " + e.getMessage());
         }
     }
 
@@ -514,46 +522,49 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
         System.out.println("4. Volver");
 
         int op = leerEntero("Seleccione consulta");
-        switch (op) {
-            case 1:
-                List<String> reporteDisponibilidad = garageController.consultarDisponibilidadGarages(usuarioSesion);
-                if (reporteDisponibilidad != null && !reporteDisponibilidad.isEmpty()) {
-                    System.out.println("\n--- Estado de Garajes ---");
-                    reporteDisponibilidad.forEach(System.out::println);
-                } else {
-                    System.out.println("No se obtuvieron datos de disponibilidad.");
-                }
-                break;
-            case 2:
-                int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
-                List<VehiculoDTO> vehiculosZona = vehiculoController.listarVehiculosPorZona(usuarioSesion, idZ);
-                System.out.println("\n--- Vehículos en la Zona " + idZ + " ---");
-                if (vehiculosZona == null || vehiculosZona.isEmpty()) {
-                    System.out.println("No se encontraron vehículos en esta zona.");
-                } else {
-                    for (VehiculoDTO v : vehiculosZona) {
-                        System.out.println("- Matrícula: " + v.getMatricula() +
-                                " | Nombre/Marca: " + v.getNombre() +
-                                " | Tipo: " + v.getTipo());
+        try {
+            switch (op) {
+                case 1:
+                    List<String> reporteDisponibilidad = garageController.consultarDisponibilidadGarages(usuarioSesion);
+                    if (reporteDisponibilidad != null && !reporteDisponibilidad.isEmpty()) {
+                        System.out.println("\n--- Estado de Garajes ---");
+                        reporteDisponibilidad.forEach(System.out::println);
+                    } else {
+                        System.out.println("No se obtuvieron datos de disponibilidad.");
                     }
-                }
-                break;
-            case 3:
-                int idEmpleado = leerNumeroPositivo("Ingrese ID del Empleado");
-                List<ZonaDTO> zonasEmpleado = empleadoController.listarZonasAsignadas(usuarioSesion, idEmpleado);
-                System.out.println("Zonas asignadas al empleado: " + zonasEmpleado.size());
-                for (ZonaDTO z : zonasEmpleado) {
-                    System.out.println("- Zona: " + z.getLetra() + " (" + z.getTipoVehiculo() + ")");
-                }
-                break;
-            case 4:
-                System.out.println("Volviendo al menú principal...");
-                break;
-            default:
-                System.out.println("Opción no válida.");
+                    break;
+                case 2:
+                    int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
+                    List<VehiculoDTO> vehiculosZona = vehiculoController.listarVehiculosPorZona(usuarioSesion, idZ);
+                    System.out.println("\n--- Vehículos en la Zona " + idZ + " ---");
+                    if (vehiculosZona == null || vehiculosZona.isEmpty()) {
+                        System.out.println("No se encontraron vehículos en esta zona.");
+                    } else {
+                        for (VehiculoDTO v : vehiculosZona) {
+                            System.out.println("- Matrícula: " + v.getMatricula() +
+                                    " | Nombre/Marca: " + v.getNombre() +
+                                    " | Tipo: " + v.getTipo());
+                        }
+                    }
+                    break;
+                case 3:
+                    int idEmpleado = leerNumeroPositivo("Ingrese ID del Empleado");
+                    List<ZonaDTO> zonasEmpleado = empleadoController.listarZonasAsignadas(usuarioSesion, idEmpleado);
+                    System.out.println("Zonas asignadas al empleado: " + zonasEmpleado.size());
+                    for (ZonaDTO z : zonasEmpleado) {
+                        System.out.println("- Zona: " + z.getLetra() + " (" + z.getTipoVehiculo() + ")");
+                    }
+                    break;
+                case 4:
+                    System.out.println("Volviendo al menú principal...");
+                    break;
+                default:
+                    System.out.println("Opción no válida.");
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al procesar la consulta: " + ex.getMessage());
         }
     }
-
     // ---------------- MÉTODOS REUTILIZABLES DE LECTURA ----------------
 
     @Override
