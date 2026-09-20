@@ -30,28 +30,6 @@ public class SocioMapper {
     }
 
     /**
-     * Versión sobrecargada para casos donde se requiera un ID específico.
-     * @deprecated Se prefiere usar toModel(SocioDTO) donde el ID viene en el DTO.
-     */
-    @Deprecated
-    public static Socio toModel(SocioDTO dto, int id) {
-        if (dto == null) return null;
-
-        return new Socio(
-                id,
-                dto.getNombre(),
-                dto.getApellido(), // <--- Mapeo de apellido
-                dto.getDireccion(),
-                dto.getTelefono(),
-                dto.getNombreUsuario(),
-                dto.getClave(),
-                Rol.SOCIO,
-                dto.getDni(),
-                dto.getFechaIngreso()
-        );
-    }
-
-    /**
      * Convierte un modelo Socio a un SocioDTO.
      * @param model El objeto Socio modelo origen.
      * @return Un nuevo SocioDTO con los datos del modelo.
