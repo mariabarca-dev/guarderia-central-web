@@ -7,21 +7,15 @@ import service.VehiculoService;
 import service.AsignacionVehiculoGarageService;
 import model.Usuario;
 import model.Rol;
-import model.TipoVehiculo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-/**
- * Controlador de vehículos encargado exclusivamente de las validaciones de sintaxis,
- * formato (expresiones regulares) y delegación hacia la capa de servicio.
- */
 public class VehiculoController implements Controlador {
 
     private final VehiculoService vehiculoService;
     private final AsignacionVehiculoGarageService asignacionVehiculoGarageService;
 
-    // Patrón de sintaxis y formato para matrículas (ej. alfanumérico de 6 a 10 caracteres con guiones opcionales)
     private static final Pattern PATTERN_MATRICULA = Pattern.compile("^[A-Z0-9\\-]{6,10}$");
     private static final Pattern PATTERN_NOMBRE_VEHICULO = Pattern.compile("^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s]{2,50}$");
     private static final Pattern PATTERN_ID = Pattern.compile("^[0-9]+$");
@@ -58,7 +52,6 @@ public class VehiculoController implements Controlador {
     public void registrarVehiculo(Usuario usuarioSesion, VehiculoDTO dto) throws ErrorNegocio, MatriculaDuplicadaException {
         validarAdministrador(usuarioSesion);
 
-        // 1. Validaciones de Sintaxis y Formato (Controller)
         if (dto == null) {
             throw new ErrorNegocio("El DTO del vehículo no puede ser nulo.");
         }
@@ -84,7 +77,6 @@ public class VehiculoController implements Controlador {
             throw new ErrorNegocio("El ancho del vehículo debe ser un valor positivo.");
         }
 
-        // 2. Delegación directa al servicio para reglas de negocio
         vehiculoService.registrarVehiculo(dto);
     }
 
@@ -113,7 +105,6 @@ public class VehiculoController implements Controlador {
             throw new ErrorNegocio("Las dimensiones de profundidad y ancho deben ser valores positivos.");
         }
 
-        // Delegación directa al servicio para persistencia y reglas de negocio
         vehiculoService.actualizarVehiculo(dto);
     }
 
@@ -157,8 +148,6 @@ public class VehiculoController implements Controlador {
         }
         return resultado;
     }
-
-    // --- Métodos Privados de Validación de Sesión y Seguridad ---
 
     private void validarUsuarioAutenticado(Usuario usuario) {
         if (usuario == null) {

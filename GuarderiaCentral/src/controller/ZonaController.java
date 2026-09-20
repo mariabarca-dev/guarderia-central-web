@@ -14,7 +14,6 @@ public class ZonaController {
 
     private final ZonaService zonaService;
 
-    // Patrones de validación de sintaxis y formato
     private static final Pattern PATTERN_LETRA_ZONA = Pattern.compile("^[a-zA-Z]{1,3}$");
     private static final Pattern PATTERN_TIPO_VEHICULO = Pattern.compile("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]{3,50}$");
     private static final Pattern PATTERN_NUMERO_POSITIVO = Pattern.compile("^[0-9]+$");
@@ -23,10 +22,6 @@ public class ZonaController {
         this.zonaService = new ZonaService();
     }
 
-    /**
-     * Registra una nueva zona validando la sintaxis y formato mediante patrones.
-     * Acceso: Solo ADMINISTRADOR.
-     */
     public void registrarZona(Usuario usuarioSesion, ZonaDTO dto) throws ErrorNegocio {
         validarAdministrador(usuarioSesion);
 
@@ -56,19 +51,11 @@ public class ZonaController {
         zonaService.registrarZona(dto);
     }
 
-    /**
-     * Lista todas las zonas registradas.
-     * Acceso: ADMINISTRADOR, EMPLEADO y SOCIO (Consulta pública/catalogada).
-     */
     public List<ZonaDTO> listarZonas(Usuario usuarioSesion) {
         validarUsuarioAutenticado(usuarioSesion);
         return zonaService.listarTodas();
     }
 
-    /**
-     * Busca una zona por su letra identificadora.
-     * Acceso: ADMINISTRADOR, EMPLEADO y SOCIO.
-     */
     public ZonaDTO buscarPorLetra(Usuario usuarioSesion, String letra) throws RegistroNoEncontradoException, ErrorNegocio {
         validarUsuarioAutenticado(usuarioSesion);
 
@@ -79,10 +66,6 @@ public class ZonaController {
         return zonaService.buscarPorLetra(letra.trim().toUpperCase());
     }
 
-    /**
-     * Actualiza la información de una zona existente.
-     * Acceso: Solo ADMINISTRADOR.
-     */
     public void actualizarZona(Usuario usuarioSesion, ZonaDTO dto) throws ErrorNegocio {
         validarAdministrador(usuarioSesion);
 
@@ -107,10 +90,6 @@ public class ZonaController {
         zonaService.actualizarZona(dto);
     }
 
-    /**
-     * Elimina una zona por su letra.
-     * Acceso: Solo ADMINISTRADOR.
-     */
     public void eliminarZona(Usuario usuarioSesion, String letra) throws ErrorNegocio {
         validarAdministrador(usuarioSesion);
 
@@ -120,8 +99,6 @@ public class ZonaController {
 
         zonaService.eliminarZona(letra.trim().toUpperCase());
     }
-
-    // --- Métodos Privados de Validación de Sesión y Seguridad ---
 
     private void validarUsuarioAutenticado(Usuario usuario) {
         if (usuario == null) {

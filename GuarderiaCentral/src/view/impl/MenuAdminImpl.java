@@ -267,6 +267,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
 
     private void altaVehiculo() {
         System.out.println("\n--- Alta de Vehículo ---");
+        int socioId = leerNumeroPositivo("ID del Socio propietario");
         String matricula = leerTexto("Matrícula");
         String nombre = leerTexto("Nombre / Marca");
         String tipo = leerTexto("Tipo / Modelo");
@@ -274,7 +275,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
         float ancho = (float) leerNumeroPositivo("Ancho del vehículo");
 
         try {
-            VehiculoDTO dto = new VehiculoDTO(0, 0, 0, nombre, matricula, tipo, profundidad, ancho);
+            VehiculoDTO dto = new VehiculoDTO(0, socioId, 0, nombre, matricula, tipo, profundidad, ancho);
             vehiculoController.registrarVehiculo(usuarioSesion, dto);
             System.out.println("Vehículo registrado correctamente.");
         } catch (ErrorNegocio ex) {
@@ -290,12 +291,13 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 return;
             }
 
+            int nuevoSocioId = leerNumeroPositivo("Nuevo ID del Socio propietario (actual: " + v.getSocioId() + ")");
             String nuevaMatricula = leerTexto("Nueva Matrícula (actual: " + v.getMatricula() + ")");
             String nuevoNombre = leerTexto("Nuevo Nombre/Marca (actual: " + v.getNombre() + ")");
             String nuevoTipo = leerTexto("Nuevo Tipo/Modelo (actual: " + v.getTipo() + ")");
 
             VehiculoDTO vActualizado = new VehiculoDTO(
-                    v.getId(), v.getSocioId(), v.getEmpleadoId(), nuevoNombre, nuevaMatricula, nuevoTipo, v.getProfundidad(), v.getAncho()
+                    v.getId(), nuevoSocioId, v.getEmpleadoId(), nuevoNombre, nuevaMatricula, nuevoTipo, v.getProfundidad(), v.getAncho()
             );
             vehiculoController.modificarVehiculo(usuarioSesion, vActualizado);
             System.out.println("Vehículo modificado con éxito.");
