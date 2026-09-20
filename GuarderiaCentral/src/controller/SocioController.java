@@ -1,10 +1,17 @@
 package controller;
 
-import exceptions.*;
-import service.*;
-import dto.*;
+import dto.GarageDTO;
+import dto.SocioDTO;
+import dto.VehiculoDTO;
+import exceptions.ErrorNegocio;
 import exceptions.RegistroNoEncontradoException;
-import model.*;
+import model.Rol;
+import model.Socio;
+import model.Usuario;
+import service.PropiedadGarageService;
+import service.SocioService;
+import service.VehiculoService;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -69,47 +76,38 @@ public class SocioController implements Controlador {
             throw new ErrorNegocio("El socio no puede ser nulo.");
         }
 
-        // Validación de DNI
         if (dto.getDni() == null || !PATTERN_DNI.matcher(dto.getDni()).matches()) {
             throw new ErrorNegocio("El formato del DNI no es válido (debe tener entre 7 y 8 dígitos numéricos).");
         }
 
-        // Validación de Nombre
         if (dto.getNombre() == null || !PATTERN_NOMBRE.matcher(dto.getNombre().trim()).matches()) {
             throw new ErrorNegocio("El nombre es obligatorio, debe tener entre 2 y 100 caracteres y contener solo letras y espacios.");
         }
 
-        // Validación de Apellido
         if (dto.getApellido() == null || !PATTERN_NOMBRE.matcher(dto.getApellido().trim()).matches()) {
             throw new ErrorNegocio("El apellido es obligatorio, debe tener entre 2 y 100 caracteres y contener solo letras y espacios.");
         }
 
-        // Validación de Dirección
         if (dto.getDireccion() == null || dto.getDireccion().trim().isEmpty() || dto.getDireccion().length() > 200) {
             throw new ErrorNegocio("La dirección es obligatoria y no puede superar los 200 caracteres.");
         }
 
-        // Validación de Teléfono
         if (dto.getTelefono() == null || !PATTERN_TELEFONO.matcher(dto.getTelefono()).matches()) {
             throw new ErrorNegocio("El formato del teléfono no es válido (7 a 20 caracteres permitiendo +, espacios y guiones).");
         }
 
-        // Validación de Nombre de Usuario
         if (dto.getNombreUsuario() == null || !PATTERN_USUARIO.matcher(dto.getNombreUsuario()).matches()) {
             throw new ErrorNegocio("El nombre de usuario debe tener entre 4 y 20 caracteres (letras, números, puntos o guiones bajos).");
         }
 
-        // Validación de Clave
         if (dto.getClave() == null || !PATTERN_CLAVE.matcher(dto.getClave()).matches()) {
             throw new ErrorNegocio("La clave no cumple con los requisitos de seguridad (mínimo 8 caracteres, incluir mayúscula, minúscula, número y carácter especial).");
         }
 
-        // Validación de Rol
         if (dto.getRol() == null) {
             throw new ErrorNegocio("El rol del usuario es obligatorio.");
         }
 
-        // Validación de Fecha de Ingreso
         if (dto.getFechaIngreso() == null) {
             throw new ErrorNegocio("La fecha de ingreso es obligatoria.");
         }
