@@ -5,8 +5,6 @@ import exceptions.ErrorNegocio;
 import model.Rol;
 import model.Usuario;
 import service.AdministradorService;
-import service.EmpleadoService;
-import service.SocioService;
 import service.UsuarioService;
 
 import java.util.List;
@@ -15,8 +13,8 @@ import java.util.regex.Pattern;
 public class AdminController {
 
     private final AdministradorService administradorService;
-    private final SocioService socioService;
-    private final EmpleadoService empleadoService;
+    private final SocioController socioController;
+    private final EmpleadoController empleadoController;
     private final UsuarioService usuarioService;
 
     // Patrones de validación de sintaxis y formato
@@ -27,8 +25,8 @@ public class AdminController {
 
     public AdminController() {
         this.administradorService = new AdministradorService();
-        this.socioService = new SocioService();
-        this.empleadoService = new EmpleadoService();
+        this.socioController = new SocioController();
+        this.empleadoController = new EmpleadoController();
         this.usuarioService = new UsuarioService();
     }
 
@@ -75,7 +73,7 @@ public class AdminController {
     }
 
     /**
-     * Polimorfismo de alta de usuario: Registra un DTO invocando al servicio correspondiente.
+     * Polimorfismo de alta de usuario: Registra un DTO delegando en los controladores correspondientes.
      */
     public void registrarUsuario(Usuario usuarioSesion, UsuarioDTO usuario) throws ErrorNegocio {
         validarAdministrador(usuarioSesion);
@@ -85,9 +83,9 @@ public class AdminController {
         }
 
         if (usuario instanceof SocioDTO socioDTO) {
-            socioService.registrarSocio(socioDTO);
+            socioController.registrarSocio(usuarioSesion, socioDTO); // Delegación a SocioController
         } else if (usuario instanceof EmpleadoDTO empleadoDTO) {
-            empleadoService.registrarEmpleado(empleadoDTO);
+            empleadoController.registrarEmpleado(usuarioSesion, empleadoDTO); // Delegación a EmpleadoController
         } else if (usuario instanceof AdministradorDTO administradorDTO) {
             registrarAdministrador(usuarioSesion, administradorDTO); // Reutiliza las validaciones de admin
         } else {
