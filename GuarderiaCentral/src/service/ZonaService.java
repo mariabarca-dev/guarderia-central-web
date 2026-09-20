@@ -33,19 +33,17 @@ public class ZonaService {
      * Valida la unicidad de la letra e incrementa el identificador.
      */
     public void registrarZona(ZonaDTO dto) throws ErrorNegocio {
-        // 1. REGLA DE NEGOCIO: La letra de la zona debe ser única
+        // Normalizar a mayúsculas antes de validar
+        dto.setLetra(dto.getLetra().trim().toUpperCase());
+
         if (zonaDAO.buscarPorLetra(dto.getLetra()) != null) {
             throw new ErrorNegocio("Error: Ya existe una zona registrada con la letra: " + dto.getLetra());
         }
 
-        // 2. Generar ID para la nueva entidad
         int nuevoId = IdGenerator.obtenerNuevoId("zona", 3000);
         dto.setId(nuevoId);
 
-        // 3. Convertir DTO a Modelo
         Zona zona = ZonaMapper.toModel(dto);
-
-        // 4. Persistir
         zonaDAO.guardar(zona);
     }
 
@@ -53,7 +51,7 @@ public class ZonaService {
      * Busca una zona por letra y retorna su DTO.
      */
     public ZonaDTO buscarPorLetra(String letra) throws RegistroNoEncontradoException {
-        Zona z = zonaDAO.buscarPorLetra(letra);
+        Zona z = zonaDAO.buscarPorLetra(letra != null ? letra.trim().toUpperCase() : null);
         if (z == null) {
             throw new RegistroNoEncontradoException("No se encontró la zona con letra: " + letra);
         }
@@ -73,13 +71,13 @@ public class ZonaService {
      * Actualiza la información de una zona existente.
      */
     public void actualizarZona(ZonaDTO dto) throws RegistroNoEncontradoException, ErrorNegocio {
-        // 1. Verificar existencia
+        dto.setLetra(dto.getLetra().trim().toUpperCase());
+
         Zona existente = zonaDAO.buscarPorLetra(dto.getLetra());
         if (existente == null) {
             throw new RegistroNoEncontradoException("No se puede actualizar: La zona " + dto.getLetra() + " no existe.");
         }
 
-        // 2. REGLA DE NEGOCIO: No permitir cambiar el tipo de vehículo si la zona ya tiene garajes
         if (!dto.getTipoVehiculo().equalsIgnoreCase(existente.getTipoVehiculo().name())) {
             boolean tieneGarajes = garageDAO.listarTodos().stream()
                     .anyMatch(g -> g.getZona() != null && g.getZona().getLetra().equalsIgnoreCase(dto.getLetra()));
@@ -90,10 +88,7 @@ public class ZonaService {
             }
         }
 
-        // 3. Preservar ID de la entidad
         dto.setId(existente.getId());
-
-        // 4. Mapeo a modelo y actualización
         Zona zonaActualizada = ZonaMapper.toModel(dto);
         zonaDAO.actualizar(zonaActualizada);
     }
@@ -103,20 +98,20 @@ public class ZonaService {
      * Garantiza la integridad referencial impidiendo borrar zonas con garajes.
      */
     public void eliminarZona(String letra) throws RegistroNoEncontradoException, ErrorNegocio {
-        Zona zona = zonaDAO.buscarPorLetra(letra);
+        String letraNorm = letra != null ? letra.trim().toUpperCase() : "";
+        Zona zona = zonaDAO.buscarPorLetra(letraNorm);
         if (zona == null) {
             throw new RegistroNoEncontradoException("No se puede eliminar: La zona " + letra + " no existe.");
         }
 
-        // REGLA DE NEGOCIO / INTEGRIDAD: No eliminar si tiene garajes asociados
         boolean tieneGarajes = garageDAO.listarTodos().stream()
-                .anyMatch(g -> g.getZona() != null && g.getZona().getLetra().equalsIgnoreCase(letra));
+                .anyMatch(g -> g.getZona() != null && g.getZona().getLetra().equalsIgnoreCase(letraNorm));
 
         if (tieneGarajes) {
             throw new ErrorNegocio("Error: No se puede eliminar la zona '" + letra
                     + "' porque existen garajes asociados a ella.");
         }
 
-        zonaDAO.eliminar(letra);
+        zonaDAO.eliminar(letraNorm);
     }
 }

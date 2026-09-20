@@ -31,7 +31,8 @@ public class ZonaDAOImpl implements ZonaDAO {
     public void actualizar(Zona zona) {
         List<Zona> lista = listarTodos();
         for (int i = 0; i < lista.size(); i++) {
-            if (lista.get(i).getLetra().equals(zona.getLetra())) {
+            // CORREGIDO: Usar equalsIgnoreCase para evitar roces por mayúsculas/minúsculas
+            if (lista.get(i).getLetra().equalsIgnoreCase(zona.getLetra())) {
                 lista.set(i, zona);
                 break;
             }
@@ -51,7 +52,8 @@ public class ZonaDAOImpl implements ZonaDAO {
     public void eliminar(String letra) {
         if (letra == null) return;
         List<Zona> lista = listarTodos();
-        lista.removeIf(z -> z.getLetra().equals(letra));
+        // CORREGIDO: Usar equalsIgnoreCase
+        lista.removeIf(z -> z.getLetra().equalsIgnoreCase(letra));
         reescribirArchivo(lista);
     }
 
