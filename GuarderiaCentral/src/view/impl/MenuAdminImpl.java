@@ -524,7 +524,17 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 break;
             case 2:
                 int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
-                vehiculoController.listarVehiculosPorZona(usuarioSesion, idZ);
+                List<VehiculoDTO> vehiculosZona = vehiculoController.listarVehiculosPorZona(usuarioSesion, idZ);
+                System.out.println("\n--- Vehículos en la Zona " + idZ + " ---");
+                if (vehiculosZona == null || vehiculosZona.isEmpty()) {
+                    System.out.println("No se encontraron vehículos en esta zona.");
+                } else {
+                    for (VehiculoDTO v : vehiculosZona) {
+                        System.out.println("- Matrícula: " + v.getMatricula() +
+                                " | Nombre/Marca: " + v.getNombre() +
+                                " | Tipo: " + v.getTipo());
+                    }
+                }
                 break;
             case 3:
                 int idEmpleado = leerNumeroPositivo("Ingrese ID del Empleado");
