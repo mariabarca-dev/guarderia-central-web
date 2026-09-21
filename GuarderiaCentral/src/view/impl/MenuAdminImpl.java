@@ -39,7 +39,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     private final ZonaController zonaController;
 
     private final Usuario usuarioSesion;
-    // (Se eliminó la declaración duplicada del Scanner para usar el heredado de VistaImpl)
+    // Se utiliza el Scanner heredado de VistaImpl
 
     public MenuAdminImpl(AdminController adminController,
                          AsignacionEmpleadoZonaController asignacionEmpleadoZonaController,
@@ -73,7 +73,8 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
             System.out.println("3. Asignar Vehículo a Garaje");
             System.out.println("4. Asignar Empleado a Zona");
             System.out.println("5. Consultas de Ocupación y Disponibilidad");
-            System.out.println("6. Cerrar Sesión");
+            System.out.println("6. Listados (Socios, Empleados, Vehículos, Garajes, Zonas)");
+            System.out.println("7. Cerrar Sesión");
 
             int opcion = leerEntero("Seleccione una opción");
             switch (opcion) {
@@ -93,6 +94,9 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                     mostrarSubmenuConsultas();
                     break;
                 case 6:
+                    mostrarSubmenuListados();
+                    break;
+                case 7:
                     System.out.println("Sesión de administrador finalizada.");
                     salir = true;
                     break;
@@ -125,6 +129,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 altaUsuario("socio");
                 break;
             case 2:
+                listarSocios();
                 int idSocio = leerNumeroPositivo("Ingrese el ID del socio a modificar");
                 modificarUsuario(idSocio, "socio");
                 break;
@@ -138,6 +143,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 altaVehiculo();
                 break;
             case 6:
+                listarVehiculos();
                 int idVehiculo = leerNumeroPositivo("Ingrese el ID del vehículo a modificar");
                 modificarVehiculo(idVehiculo);
                 break;
@@ -148,6 +154,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 altaGaraje();
                 break;
             case 9:
+                listarGarajes();
                 int numGaraje = leerNumeroPositivo("Ingrese el Número del garaje a modificar");
                 modificarGarage(numGaraje);
                 break;
@@ -158,6 +165,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 altaZona();
                 break;
             case 12:
+                listarZonas();
                 String letraZonaMod = leerTexto("Ingrese la Letra de la zona a modificar");
                 modificarZona(letraZonaMod);
                 break;
@@ -169,6 +177,145 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 break;
             default:
                 System.out.println("Opción inválida.");
+        }
+    }
+
+    // ---------------- LISTADOS ----------------
+
+    private void mostrarSubmenuListados() {
+        System.out.println("\n--- LISTADOS ---");
+        System.out.println("1. Listar Socios");
+        System.out.println("2. Listar Empleados");
+        System.out.println("3. Listar Vehículos");
+        System.out.println("4. Listar Garajes");
+        System.out.println("5. Listar Zonas");
+        System.out.println("6. Volver");
+
+        int op = leerEntero("Seleccione qué desea listar");
+        switch (op) {
+            case 1:
+                listarSocios();
+                break;
+            case 2:
+                listarEmpleados();
+                break;
+            case 3:
+                listarVehiculos();
+                break;
+            case 4:
+                listarGarajes();
+                break;
+            case 5:
+                listarZonas();
+                break;
+            case 6:
+                System.out.println("Volviendo al menú principal...");
+                break;
+            default:
+                System.out.println("Opción inválida.");
+        }
+    }
+
+    private void listarSocios() {
+        System.out.println("\n--- Socios registrados ---");
+        try {
+            List<SocioDTO> socios = socioController.listarTodosLosSocios(usuarioSesion);
+            if (socios == null || socios.isEmpty()) {
+                System.out.println("No hay socios registrados.");
+                return;
+            }
+            for (SocioDTO s : socios) {
+                System.out.println("ID: " + s.getId()
+                        + " | " + s.getApellido() + ", " + s.getNombre()
+                        + " | DNI: " + s.getDni()
+                        + " | Tel: " + s.getTelefono()
+                        + " | Ingreso: " + s.getFechaIngreso());
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al listar socios: " + ex.getMessage());
+        }
+    }
+
+    private void listarEmpleados() {
+        System.out.println("\n--- Empleados registrados ---");
+        try {
+            List<EmpleadoDTO> empleados = empleadoController.listarTodosLosEmpleados(usuarioSesion);
+            if (empleados == null || empleados.isEmpty()) {
+                System.out.println("No hay empleados registrados.");
+                return;
+            }
+            for (EmpleadoDTO e : empleados) {
+                System.out.println("ID: " + e.getId()
+                        + " | Código: " + e.getCodigo()
+                        + " | " + e.getApellido() + ", " + e.getNombre()
+                        + " | Especialidad: " + e.getEspecialidad());
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al listar empleados: " + ex.getMessage());
+        }
+    }
+
+    private void listarVehiculos() {
+        System.out.println("\n--- Vehículos registrados ---");
+        try {
+            List<VehiculoDTO> vehiculos = vehiculoController.listarTodosLosVehiculos(usuarioSesion);
+            if (vehiculos == null || vehiculos.isEmpty()) {
+                System.out.println("No hay vehículos registrados.");
+                return;
+            }
+            for (VehiculoDTO v : vehiculos) {
+                System.out.println("ID: " + v.getId()
+                        + " | Matrícula: " + v.getMatricula()
+                        + " | Nombre: " + v.getNombre()
+                        + " | Tipo: " + v.getTipo()
+                        + " | ID Socio: " + v.getSocioId());
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al listar vehículos: " + ex.getMessage());
+        }
+    }
+
+    private void listarGarajes() {
+        System.out.println("\n--- Garajes registrados ---");
+        try {
+            List<GarageDTO> garajes = garageController.listarGarajes(usuarioSesion);
+            if (garajes == null || garajes.isEmpty()) {
+                System.out.println("No hay garajes registrados.");
+                return;
+            }
+            for (GarageDTO g : garajes) {
+                String propietario = (g.getSocioPropietario() != null) ? "DNI " + g.getSocioPropietario() : "Libre";
+                String fecha = (g.getFechaCompra() != null) ? g.getFechaCompra().toString() : "-";
+                System.out.println("N° " + g.getNumeroGarage()
+                        + " | Zona: " + g.getZona()
+                        + " | Luz: " + g.getLecturaLuz()
+                        + " | Mantenimiento: " + (g.isServicioMantenimiento() ? "Sí" : "No")
+                        + " | Propietario: " + propietario
+                        + " | Fecha compra: " + fecha);
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al listar garajes: " + ex.getMessage());
+        }
+    }
+
+    private void listarZonas() {
+        System.out.println("\n--- Zonas registradas ---");
+        try {
+            List<ZonaDTO> zonas = zonaController.listarZonas(usuarioSesion);
+            if (zonas == null || zonas.isEmpty()) {
+                System.out.println("No hay zonas registradas.");
+                return;
+            }
+            for (ZonaDTO z : zonas) {
+                System.out.println("ID: " + z.getId()
+                        + " | Letra: " + z.getLetra()
+                        + " | Tipo: " + z.getTipoVehiculo()
+                        + " | Capacidad: " + z.getCapacidadVehiculos()
+                        + " | Ancho: " + z.getAncho()
+                        + " | Largo: " + z.getLargo());
+            }
+        } catch (Exception ex) {
+            System.out.println("Error al listar zonas: " + ex.getMessage());
         }
     }
 
@@ -251,8 +398,9 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     }
 
     private void eliminarUsuario(String tipo) {
-        int id = leerNumeroPositivo("Ingrese ID a eliminar");
         if ("socio".equalsIgnoreCase(tipo)) {
+            listarSocios();
+            int id = leerNumeroPositivo("Ingrese ID a eliminar");
             try {
                 socioController.eliminarSocio(usuarioSesion, id);
                 System.out.println("Socio eliminado con éxito.");
@@ -266,6 +414,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
 
     private void altaVehiculo() {
         System.out.println("\n--- Alta de Vehículo ---");
+        listarSocios();
         int socioId = leerNumeroPositivo("ID del Socio propietario");
         String matricula = leerTexto("Matrícula");
         String nombre = leerTexto("Nombre / Marca");
@@ -313,10 +462,8 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     }
 
     private void eliminarVehiculo() {
-        System.out.println("\n--- Lista de Vehículos ---");
+        listarVehiculos();
         try {
-            vehiculoController.listarTodosLosVehiculos(usuarioSesion);
-
             int idVehiculo = leerNumeroPositivo("Ingrese el ID del vehículo a eliminar");
             VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(usuarioSesion, idVehiculo);
 
@@ -330,6 +477,8 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
 
         } catch (ErrorNegocio ex) {
             System.out.println("Error al eliminar vehículo: " + ex.getMessage());
+        } catch (Exception ex) {
+            System.out.println("Error inesperado al eliminar vehículo: " + ex.getMessage());
         }
     }
 
@@ -337,6 +486,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
         System.out.println("\n--- Alta de Garaje ---");
         int numero = leerNumeroPositivo("Número de Garaje");
         float lecturaLuz = (float) leerNumeroPositivo("Lectura Inicial de Luz");
+        listarZonas();
         String letraZona = leerTexto("Letra de la Zona");
 
         GarageDTO dto = new GarageDTO(0, numero, lecturaLuz, false, null, null, letraZona);
@@ -371,14 +521,15 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
 
     private void eliminarGarage() {
         System.out.println("\n--- Baja de Garaje ---");
+        listarGarajes();
         int numeroGarage = leerNumeroPositivo("Número del Garaje a eliminar");
         try {
             garageController.eliminarGarage(usuarioSesion, numeroGarage);
             System.out.println("Garaje eliminado correctamente.");
         } catch (RegistroNoEncontradoException e) {
             System.out.println("Error: Garaje no encontrado. " + e.getMessage());
-        } catch (ErrorNegocio e) {
-            System.out.println("Error de negocio: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -421,14 +572,15 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
 
     private void eliminarZona() {
         System.out.println("\n--- Baja de Zona ---");
+        listarZonas();
         String letra = leerTexto("Letra de la Zona a eliminar");
         try {
             zonaController.eliminarZona(usuarioSesion, letra);
             System.out.println("Zona eliminada correctamente.");
-        } catch (RegistroNoEncontradoException e) {
-            System.out.println("Error: Zona no encontrada. " + e.getMessage());
         } catch (ErrorNegocio e) {
             System.out.println("Error de negocio: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -437,6 +589,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     private void ejecutarVentaGarage() {
         System.out.println("\n--- Operación: Registrar Propiedad de Garaje ---");
 
+        listarSocios();
         int socioId = leerNumeroPositivo("ID del Socio comprador");
         try {
             SocioDTO socio = socioController.buscarSocioPorId(usuarioSesion, socioId);
@@ -445,6 +598,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 return;
             }
 
+            listarGarajes();
             int numeroGarage = leerNumeroPositivo("Número del Garaje");
             GarageDTO garage = garageController.buscarPorNumero(usuarioSesion, numeroGarage);
 
@@ -469,6 +623,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     private void ejecutarAsignacionVehiculo() {
         System.out.println("\n--- Operación: Ocupación / Asignación de Garaje ---");
 
+        listarVehiculos();
         int vehiculoId = leerNumeroPositivo("ID del Vehículo");
         try {
             VehiculoDTO vehiculo = vehiculoController.buscarVehiculoPorId(usuarioSesion, vehiculoId);
@@ -477,6 +632,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                 return;
             }
 
+            listarGarajes();
             int numeroGarage = leerNumeroPositivo("Número del Garaje a ocupar (0 para cancelar)");
             if (numeroGarage == 0) {
                 System.out.println("Operación cancelada.");
@@ -502,7 +658,9 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
         System.out.println("\n--- Operación: Carga de Personal en Zona ---");
 
         try {
+            listarEmpleados();
             String idEmpleadoStr = String.valueOf(leerNumeroPositivo("ID del Empleado"));
+            listarZonas();
             String idZonaStr = String.valueOf(leerNumeroPositivo("ID de la Zona"));
             String cantVehiculosStr = String.valueOf(leerNumeroPositivo("Cantidad de vehículos bajo su cargo"));
 
@@ -533,6 +691,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                     }
                     break;
                 case 2:
+                    listarZonas();
                     int idZ = leerNumeroPositivo("Ingrese ID de la Zona");
                     List<VehiculoDTO> vehiculosZona = vehiculoController.listarVehiculosPorZona(usuarioSesion, idZ);
                     System.out.println("\n--- Vehículos en la Zona " + idZ + " ---");
@@ -547,6 +706,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
                     }
                     break;
                 case 3:
+                    listarEmpleados();
                     int idEmpleado = leerNumeroPositivo("Ingrese ID del Empleado");
                     List<ZonaDTO> zonasEmpleado = empleadoController.listarZonasAsignadas(usuarioSesion, idEmpleado);
                     System.out.println("Zonas asignadas al empleado: " + zonasEmpleado.size());
@@ -564,6 +724,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
             System.out.println("Error al procesar la consulta: " + ex.getMessage());
         }
     }
+
     // ---------------- MÉTODOS REUTILIZABLES DE LECTURA ----------------
 
     @Override

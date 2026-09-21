@@ -39,7 +39,16 @@ public class EmpleadoController implements Controlador {
 
     @Override
     public void login(String nombreUsuario, String claveIngresada) {
-        // La autenticación centralizada se maneja en LoginController
+        throw new UnsupportedOperationException("El controlador de empleados no soporta operaciones de inicio de sesión.");
+    }
+
+    /**
+     * Lista todos los empleados registrados en el sistema.
+     * Acceso: Solo ADMINISTRADOR.
+     */
+    public List<EmpleadoDTO> listarTodosLosEmpleados(Usuario usuarioSesion) {
+        validarAdministrador(usuarioSesion);
+        return empleadoService.listarTodos();
     }
 
     /**
