@@ -16,7 +16,6 @@ import exceptions.RegistroNoEncontradoException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Scanner;
 
 import model.Rol;
 import model.Usuario;
@@ -40,7 +39,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     private final ZonaController zonaController;
 
     private final Usuario usuarioSesion;
-    private final Scanner scanner = new Scanner(System.in);
+    // (Se eliminó la declaración duplicada del Scanner para usar el heredado de VistaImpl)
 
     public MenuAdminImpl(AdminController adminController,
                          AsignacionEmpleadoZonaController asignacionEmpleadoZonaController,
@@ -570,7 +569,7 @@ public class MenuAdminImpl extends VistaImpl implements MenuAdmin {
     @Override
     protected String leerTexto(String mensaje) {
         System.out.print(mensaje + ": ");
-        return scanner.nextLine().trim();
+        return scanner.nextLine().trim(); // Utiliza el scanner heredado de VistaImpl
     }
 
     private String leerTextoConLimite(String mensaje, int limite) {

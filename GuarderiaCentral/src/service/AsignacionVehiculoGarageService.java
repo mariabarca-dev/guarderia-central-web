@@ -38,7 +38,7 @@ public class AsignacionVehiculoGarageService {
 
     /**
      * Registra la asignación de un vehículo a un garaje.
-     * Contiene las reglas de negocio de ocupación, pertenencia, compatibilidad y fechas.
+     * Contiene las reglas de negocio de ocupación, pertenencia, compatibilidad y capacidad.
      */
     public void crearAsignacion(AsignacionVehiculoGarageDTO dto)
             throws ErrorNegocio, GarageYaOcupadoException, ZonaSinCapacidadException {
@@ -88,15 +88,9 @@ public class AsignacionVehiculoGarageService {
                     + " no es compatible con la zona asignada a " + garageCompleto.getZona().getTipoVehiculo() + ".");
         }
 
-        // 7. REGLA DE NEGOCIO: Consistencia de fechas (Asignación vs Compra)
-        if (garageCompleto.getFechaCompra() != null) {
-            if (nuevaAsignacion.getFechaAsignacionGarage().isBefore(garageCompleto.getFechaCompra())) {
-                throw new ErrorNegocio("Error de negocio: La fecha de asignación no puede ser anterior a la fecha de compra del garaje ("
-                        + garageCompleto.getFechaCompra() + ").");
-            }
-        }
+        // Nota: Se eliminó el bloque de consistencia de fechas (Asignación vs Compra) por solicitud explícita de la consigna.
 
-        // 8. REGLA DE NEGOCIO: Excepción específica de capacidad máxima en la Zona
+        // 7. REGLA DE NEGOCIO: Excepción específica de capacidad máxima en la Zona
         Zona zona = garageCompleto.getZona();
         int capacidadMaxima = zona.getCapacidadVehiculos();
         int vehiculosActuales = contarVehiculosActivosEnZona(zona);
@@ -106,9 +100,10 @@ public class AsignacionVehiculoGarageService {
                     + "' ha alcanzado su capacidad máxima permitida de " + capacidadMaxima + " vehículos.");
         }
 
-        // 9. Persistir asignación
+        // 8. Persistir asignación
         dao.guardar(nuevaAsignacion);
     }
+
     private int contarVehiculosActivosEnZona(Zona zona) {
         List<AsignacionVehiculoGarage> todas = dao.listarTodas();
         int contador = 0;

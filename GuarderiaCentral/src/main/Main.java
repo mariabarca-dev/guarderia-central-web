@@ -33,9 +33,7 @@ public class Main {
             MenuLoginImpl loginView = new MenuLoginImpl();
             // El login llama a los otros menús internamente
             loginView.mostrar();
-            // Finalización de la aplicación
-            System.out.println("Aplicación finalizada.");
         }
-        
+
     }
 }

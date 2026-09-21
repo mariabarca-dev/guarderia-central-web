@@ -2,8 +2,10 @@ package service;
 
 import dao.GarageDAO;
 import dao.ZonaDAO;
+import dao.AsignacionVehiculoGarageDAO;
 import dao.impl.GarageDAOImpl;
 import dao.impl.ZonaDAOImpl;
+import dao.impl.AsignacionVehiculoGarageDAOImpl;
 import dto.GarageDTO;
 import exceptions.ErrorNegocio;
 import exceptions.RegistroNoEncontradoException;
@@ -12,6 +14,7 @@ import mapper.GarageMapper;
 import model.Garage;
 import model.Socio;
 import model.Zona;
+import model.AsignacionVehiculoGarage;
 import util.IdGenerator;
 
 import java.util.ArrayList;
@@ -22,10 +25,12 @@ public class GarageService {
 
     private final GarageDAO garageDAO;
     private final ZonaDAO zonaDAO;
+    private final AsignacionVehiculoGarageDAO asignacionDAO;
 
     public GarageService() {
         this.garageDAO = new GarageDAOImpl();
         this.zonaDAO = new ZonaDAOImpl();
+        this.asignacionDAO = new AsignacionVehiculoGarageDAOImpl();
     }
 
     public void registrarGarage(GarageDTO dto) throws ZonaSinCapacidadException, ErrorNegocio, RegistroNoEncontradoException {
@@ -95,20 +100,27 @@ public class GarageService {
     public List<String> consultarDisponibilidadGarages() {
         List<String> reporte = new ArrayList<>();
         List<Zona> zonas = zonaDAO.listarTodos();
+        List<AsignacionVehiculoGarage> asignacionesActivas = asignacionDAO.listarTodas();
 
         for (Zona z : zonas) {
-            long ocupados = garageDAO.listarTodos().stream()
-                    .filter(g -> g.getZona() != null && g.getZona().getLetra().equalsIgnoreCase(z.getLetra()))
+            // Cálculo de la ocupación real basada en los vehículos efectivamente asignados en esta zona
+            long ocupadosReales = asignacionesActivas.stream()
+                    .filter(a -> a.getGarage() != null && a.getGarage().getZona() != null
+                            && a.getGarage().getZona().getLetra().equalsIgnoreCase(z.getLetra()))
                     .count();
-            int disponibles = z.getCapacidadVehiculos() - (int) ocupados;
+
+            int disponibles = z.getCapacidadVehiculos() - (int) ocupadosReales;
+            if (disponibles < 0) {
+                disponibles = 0;
+            }
+
             reporte.add("Zona " + z.getLetra() + " (" + z.getTipoVehiculo() + "): "
-                    + disponibles + " disponibles de " + z.getCapacidadVehiculos() + " totales.");
+                    + disponibles + " disponibles de " + z.getCapacidadVehiculos() + " totales (Ocupados: " + ocupadosReales + ").");
         }
         return reporte;
     }
 
     public Garage buscarPorId(int id) throws RegistroNoEncontradoException {
-        // Asumiendo que tu DAO tiene un método buscarPorId
         Garage g = garageDAO.buscarPorId(id);
 
         if (g == null) {
@@ -117,7 +129,4 @@ public class GarageService {
 
         return g;
     }
-
-
-
 }
