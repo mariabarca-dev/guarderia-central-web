@@ -5,7 +5,7 @@ import util.InicializarDataBase; // Importar la clase de inicialización
 import service.AdministradorService; // Importar servicios necesarios
 import service.EmpleadoService;
 import service.SocioService;
-import exceptions.ErrorNegocio; // Importar excepción de negocio
+
 
 public class Main {
 

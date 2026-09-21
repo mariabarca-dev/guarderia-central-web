@@ -4,19 +4,12 @@ import model.AsignacionVehiculoGarage;
 import model.Vehiculo;
 import model.Garage;
 import model.Zona;
-import model.Socio;
 import dto.AsignacionVehiculoGarageDTO;
-import dto.GarageDTO;
 import dto.VehiculoDTO;
 import mapper.AsignacionVehiculoGarageMapper;
-import mapper.GarageMapper;
 import mapper.VehiculoMapper;
 import dao.AsignacionVehiculoGarageDAO;
 import dao.impl.AsignacionVehiculoGarageDAOImpl;
-import dao.SocioDAO;
-import dao.impl.SocioDAOImpl;
-import dao.ZonaDAO;
-import dao.impl.ZonaDAOImpl;
 import exceptions.ErrorNegocio;
 import exceptions.GarageYaOcupadoException;
 import exceptions.RegistroNoEncontradoException;
@@ -27,13 +20,9 @@ import java.util.List;
 public class AsignacionVehiculoGarageService {
 
     private final AsignacionVehiculoGarageDAO dao;
-    private final SocioDAO socioDAO;
-    private final ZonaDAO zonaDAO;
 
     public AsignacionVehiculoGarageService() {
         this.dao = new AsignacionVehiculoGarageDAOImpl();
-        this.socioDAO = new SocioDAOImpl();
-        this.zonaDAO = new ZonaDAOImpl();
     }
 
     /**
@@ -88,7 +77,7 @@ public class AsignacionVehiculoGarageService {
                     + " no es compatible con la zona asignada a " + garageCompleto.getZona().getTipoVehiculo() + ".");
         }
 
-        // Nota: Se eliminó el bloque de consistencia de fechas (Asignación vs Compra) por solicitud explícita de la consigna.
+        // Nota: no hay relación entre la fecha de compra del garaje y la de asignación del vehículo (según consigna).
 
         // 7. REGLA DE NEGOCIO: Excepción específica de capacidad máxima en la Zona
         Zona zona = garageCompleto.getZona();
@@ -115,22 +104,6 @@ public class AsignacionVehiculoGarageService {
             }
         }
         return contador;
-    }
-
-    private Socio buscarSocioExistente(String identificadorSocio) {
-        if (identificadorSocio == null || identificadorSocio.trim().isEmpty() || identificadorSocio.equalsIgnoreCase("Libre")) {
-            return null;
-        }
-
-        Socio porDni = socioDAO.buscarPorDni(identificadorSocio);
-        if (porDni != null) {
-            return porDni;
-        }
-
-        return socioDAO.listarTodos().stream()
-                .filter(s -> s.getNombre() != null && s.getNombre().equalsIgnoreCase(identificadorSocio))
-                .findFirst()
-                .orElse(null);
     }
 
     public AsignacionVehiculoGarage buscarPorGarage(Garage garage) {
