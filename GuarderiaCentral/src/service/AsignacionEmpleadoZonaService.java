@@ -12,26 +12,27 @@ import exceptions.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Servicio para gestionar la asignación de empleados a zonas.
- * Ahora utiliza DTOs para la entrada de datos.
- */
 public class AsignacionEmpleadoZonaService {
 
     private AsignacionEmpleadoZonaDAO dao;
-    private final ZonaService zonaService = new ZonaService();
+    private final ZonaService zonaService;
     private final EmpleadoService empleadoService;
 
+    // Constructor por defecto
     public AsignacionEmpleadoZonaService() {
         this.dao = new AsignacionEmpleadoZonaDAOImpl();
-        this.empleadoService = new EmpleadoService();
+        this.zonaService = new ZonaService();
+        // Le pasamos 'this' para compartir la misma instancia y romper la recursión
+        this.empleadoService = new EmpleadoService(this);
     }
 
-    /**
-     * Crea la asignación de un empleado a una zona.
-     * Reglas de negocio: la cantidad de vehículos no puede ser negativa, un empleado
-     * no puede asignarse dos veces a la misma zona y la zona no puede superar su capacidad.
-     */
+    // Constructor para inyección de dependencias
+    public AsignacionEmpleadoZonaService(EmpleadoService empleadoService) {
+        this.dao = new AsignacionEmpleadoZonaDAOImpl();
+        this.zonaService = new ZonaService();
+        this.empleadoService = empleadoService;
+    }
+
     public void crearAsignacion(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
         if (dto == null || dto.getEmpleado() == null || dto.getZona() == null) {
             throw new ErrorNegocio("Error: El empleado y la zona son obligatorios.");
@@ -45,7 +46,6 @@ public class AsignacionEmpleadoZonaService {
             throw new ErrorNegocio("Error: La cantidad de vehículos a cargo no puede ser negativa.");
         }
 
-        // Un empleado puede estar en varias zonas, pero no dos veces en la misma
         int empleadoId = dto.getEmpleado().getId();
         boolean yaAsignado = dao.listarTodas().stream()
                 .anyMatch(a -> a.getEmpleado() != null && a.getZona() != null
@@ -65,6 +65,21 @@ public class AsignacionEmpleadoZonaService {
         dao.guardar(nuevaAsignacion);
     }
 
+    public void crearAsignacionPorIds(int idEmpleado, int idZona, int cantVehiculos) throws ErrorNegocio {
+        ZonaDTO zonaDto = zonaService.listarTodas().stream()
+                .filter(z -> z.getId() == idZona)
+                .findFirst()
+                .orElseThrow(() -> new RegistroNoEncontradoException("La zona especificada no existe."));
+
+        EmpleadoDTO empleadoDto = empleadoService.buscarEmpleadoPorId(idEmpleado);
+        if (empleadoDto == null) {
+            throw new RegistroNoEncontradoException("El empleado especificado no existe.");
+        }
+
+        AsignacionEmpleadoZonaDTO dto = new AsignacionEmpleadoZonaDTO(empleadoDto, zonaDto, cantVehiculos);
+        crearAsignacion(dto);
+    }
+
     public List<AsignacionEmpleadoZona> listarTodas() {
         return dao.listarTodas();
     }
@@ -74,25 +89,9 @@ public class AsignacionEmpleadoZonaService {
     }
 
     public void asignarEmpleadoAZona(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
-        // Validation: zona exista
-        ZonaDTO zona = zonaService.listarTodas().stream()
-                .filter(z -> z.getId() == dto.getZona().getId())
-                .findFirst()
-                .orElseThrow(() -> new RegistroNoEncontradoException("La zona especificada no existe."));
-
-        // Validation: empleado exista
-        EmpleadoDTO empleado = empleadoService.buscarEmpleadoPorId(dto.getEmpleado().getId());
-        if (empleado == null) {
-            throw new RegistroNoEncontradoException("El empleado especificado no existe.");
-        }
-
-        // Delegamos al service la creación
         crearAsignacion(dto);
     }
 
-    /**
-     * Devuelve la lista de EmpleadoDTO asignados a una zona determinada.
-     */
     public List<EmpleadoDTO> obtenerEmpleadosPorZona(int idZona) {
         return listarTodas().stream()
                 .filter(asg -> asg.getZona() != null && asg.getZona().getId() == idZona)
