@@ -3,14 +3,12 @@ package service;
 import dto.EmpleadoDTO;
 import dto.ZonaDTO;
 import model.AsignacionEmpleadoZona;
-import model.Empleado;
 import model.Zona;
 import dto.AsignacionEmpleadoZonaDTO;
 import mapper.AsignacionEmpleadoZonaMapper;
 import dao.AsignacionEmpleadoZonaDAO;
 import dao.impl.AsignacionEmpleadoZonaDAOImpl;
 import exceptions.*;
-import exceptions.ZonaSinCapacidadException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +17,7 @@ import java.util.stream.Collectors;
  * Ahora utiliza DTOs para la entrada de datos.
  */
 public class AsignacionEmpleadoZonaService {
-    
+
     private AsignacionEmpleadoZonaDAO dao;
     private final ZonaService zonaService = new ZonaService();
     private final EmpleadoService empleadoService;
@@ -29,6 +27,11 @@ public class AsignacionEmpleadoZonaService {
         this.empleadoService = new EmpleadoService();
     }
 
+    /**
+     * Crea la asignación de un empleado a una zona.
+     * Reglas de negocio: la cantidad de vehículos no puede ser negativa, un empleado
+     * no puede asignarse dos veces a la misma zona y la zona no puede superar su capacidad.
+     */
     public void crearAsignacion(AsignacionEmpleadoZonaDTO dto) throws ErrorNegocio {
         if (dto == null || dto.getEmpleado() == null || dto.getZona() == null) {
             throw new ErrorNegocio("Error: El empleado y la zona son obligatorios.");
@@ -40,6 +43,16 @@ public class AsignacionEmpleadoZonaService {
 
         if (cantVehiculosACargo < 0) {
             throw new ErrorNegocio("Error: La cantidad de vehículos a cargo no puede ser negativa.");
+        }
+
+        // Un empleado puede estar en varias zonas, pero no dos veces en la misma
+        int empleadoId = dto.getEmpleado().getId();
+        boolean yaAsignado = dao.listarTodas().stream()
+                .anyMatch(a -> a.getEmpleado() != null && a.getZona() != null
+                        && a.getEmpleado().getId() == empleadoId
+                        && a.getZona().getId() == zona.getId());
+        if (yaAsignado) {
+            throw new ErrorNegocio("Error: El empleado ya está asignado a la zona " + zona.getLetra() + ".");
         }
 
         int vehiculosActuales = dao.contarVehiculosEnZona(zona.getId());
@@ -55,7 +68,7 @@ public class AsignacionEmpleadoZonaService {
     public List<AsignacionEmpleadoZona> listarTodas() {
         return dao.listarTodas();
     }
-    
+
     public List<AsignacionEmpleadoZona> buscarPorCodigoEmpleado(String codigo) {
         return dao.buscarPorEmpleado(codigo);
     }
@@ -76,21 +89,6 @@ public class AsignacionEmpleadoZonaService {
         // Delegamos al service la creación
         crearAsignacion(dto);
     }
-
-
-    /*public void listarEmpleadosPorZona(int idZona) {
-        List<AsignacionEmpleadoZona> asignaciones = listarTodas();
-
-        System.out.println("Empleados asignados a la zona " + idZona + ":");
-        for (AsignacionEmpleadoZona asg : asignaciones) {
-            if (asg.getZona().getId() == idZona) {
-                Empleado emp = asg.getEmpleado();
-                System.out.println("ID: " + emp.getId()
-                        + " | Código: " + emp.getCodigo()
-                        + " | Nombre: " + emp.getNombre());
-            }
-        }
-    }*/
 
     /**
      * Devuelve la lista de EmpleadoDTO asignados a una zona determinada.
