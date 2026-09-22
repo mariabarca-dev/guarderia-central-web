@@ -1,1 +1,2 @@
-100,Admin Default,Calle Falsa 123,12345678,admin,admin123,ADMINISTRADOR
+100,Admin, Default,Calle Falsa 123,12345678,admin,admin123,ADMINISTRADOR
+102,Super Admin,Default,Av. Corrientes 1000,1100000000,superadmin,super123,ADMINISTRADOR
